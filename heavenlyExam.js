@@ -11,11 +11,30 @@ const heavenlyCache = {};
 
 /**
  * 📂 메뉴 전환: 메인 -> 분기 선택
+ * @param {string} highlightId - 강조할 분기 버튼의 ID (예: 'q1', 'q2', 'q3', 'q4')
+ * @param {string} color - 강조할 배경 색상 (예: '#f51212', 'blue')
  */
-function showQuarterMenu() {
-    // index.html의 ID와 정확히 일치시킴
-    document.getElementById('main-menu').style.display = 'none';
-    document.getElementById('quarter-menu').style.display = 'block';
+function showQuarterMenu(highlightId, color) {
+    // 1. 화면 전환 (기존 로직)
+    const mainMenu = document.getElementById('main-menu');
+    const quarterMenu = document.getElementById('quarter-menu');
+
+    if (mainMenu) mainMenu.style.display = 'none';
+    if (quarterMenu) quarterMenu.style.display = 'block';
+
+    // 💡 2. 특정 분기 강조 로직 (기획자님이 인자로 넘겨준 값 사용)
+    if (highlightId && color) {
+        const targetBtn = document.getElementById(highlightId);
+        if (targetBtn) {
+            // 배경색과 글자색을 설정하여 시인성 확보
+            targetBtn.style.backgroundColor = color;
+            targetBtn.style.color = "white"; 
+            
+            // 기획자님이 설정하신 그림자 효과
+            targetBtn.style.boxShadow = "0 8px 20px rgba(245, 18, 18, 0.15)";
+        }
+    }
+
     window.scrollTo(0, 0);
 }
 
