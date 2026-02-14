@@ -1,0 +1,156 @@
+/**
+ * 👑 style.css: 원본 기준 로딩 위치 및 정렬 수정본
+ */
+
+/* [원본 유지] 기본 설정 */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:root { 
+    --ios-blue: #007AFF; --ios-bg: #F2F2F7; --text-main: #1C1C1E;
+    --text-sub: #3A3A3C; --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+    --glass-blur: blur(20px);
+}
+
+body { 
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; 
+    background-color: var(--ios-bg); background-image: linear-gradient(135deg, #F2F2F7 0%, #E5E5EA 100%);
+    padding: 0; margin: 0; color: var(--text-main); -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+
+.container { max-width: 520px; margin: 0 auto; padding: 24px 16px; display: flex; flex-direction: column; min-height: 100vh; }
+h2 { font-weight: 800; font-size: 26px; letter-spacing: -0.5px; margin: 40px 0 24px; text-align: center; }
+
+/* [원본 유지] 메인 메뉴 버튼 레이아웃 */
+#main-menu { display: flex; flex-direction: column; gap: 20px; width: 100%; margin-top: 10px; }
+#main-menu .category-btn { width: 90%; border-radius: 32px; flex: none; margin: 1em ; text-align: center }
+.category-btn1{
+     background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+    border: var(--glass-border); box-shadow: var(--glass-shadow); border-radius: 28px;  flex: 1; min-width: 0; cursor: pointer; 
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); text-align: center;
+    display: flex; flex-direction: column; justify-content: center;
+    width:95%; border-radius: 20px; flex: none; margin: 1em 0 ; text-align: center;color: #FF3B30;background-color: rgba(255, 255, 255, 0);}
+.category-btn1 h3 {font-size: 0.8em}
+#main-menu .category-btn h3 { font-size: 24px; margin-bottom: 8px;}
+#main-menu .category-btn p { font-size: 15px; opacity: 0.85; }
+
+/* [원본 유지] 카테고리 버튼 공통 */
+.category-btn {
+    background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+    border: var(--glass-border); box-shadow: var(--glass-shadow); border-radius: 28px; 
+    padding: 24px 16px; flex: 1; min-width: 0; cursor: pointer; 
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); text-align: center;
+    display: flex; flex-direction: column; justify-content: center; min-height: 160px;
+}
+.category-btn h3 { margin: 0; font-size: 19px; color: var(--ios-blue); font-weight: 800; }
+.category-btn p { margin: 10px 0 0; color: var(--text-sub); font-size: 13px; font-weight: 600; line-height: 1.4; opacity: 0.8; }
+.category-btn:active { transform: scale(0.96); background: rgba(255,255,255,0.9); margin: 1em}
+
+#quarter-menu .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+#quarter-menu .category-btn { width: 100%; min-height: 120px; }
+#quarter-menu .category-btn h3 { font-size: 18px; }
+
+/* [원본 유지] 퀴즈 및 네비게이션 */
+.quiz-nav { display: flex; justify-content: space-between; padding: 12px 16px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(15px); border-radius: 18px; position: sticky; top: 10px; z-index: 100; }
+.nav-btn { font-size: 14px; font-weight: 700; color: var(--ios-blue); cursor: pointer; }
+.quiz-item { margin-bottom: 20px; padding: 24px; line-height: 1.8; word-break: keep-all; background: var(--glass-bg); border-radius: 24px; box-shadow: var(--glass-shadow); }
+.q-inline-input { border: none; border-bottom: 2px solid #C7C7CC; background: rgba(255, 249, 196, 0.5); font-weight: 700; color: #FF3B30; font-size: 17px; padding: 2px 8px; margin: 2px 4px; text-align: center; border-radius: 6px; outline: none; }
+#quiz-title { font-weight: 800; text-align: center; margin-bottom: 24px; font-size: 20px; color: var(--text-main); }
+
+.guide-box1 {color: #ff0000;font-weight: 600} 
+.back-btsssn2{font-size: 2em;font-weight: 900;text-align: center;} 
+
+/* [원본 유지] 버튼 및 액션 */
+.submit-btn { width: 100%; padding: 20px; background: linear-gradient(135deg, #007AFF, #0055FF); color: white; border: none; border-radius: 20px; font-size: 17px; font-weight: 800; cursor: pointer; margin-top: 24px; box-shadow: 0 10px 25px rgba(0,122,255,0.25); margin-bottom: 12px; }
+.submit-btn:active { transform: scale(0.97); }
+.submit-btn.secondary { background: rgba(142, 142, 147, 0.25); color: #1C1C1E; box-shadow: none; margin-bottom: 30px; }
+.back-btn { cursor: pointer; color: var(--ios-blue); font-weight: 700; margin-bottom: 20px; display: inline-flex; background: rgba(255,255,255,0.5); padding: 8px 16px; border-radius: 15px; }
+
+/* =========================================
+   [🟢 수정: 로딩 통합] 수직 중앙 정렬 보정
+   ========================================= */
+#loading { 
+    position: fixed; 
+    top: 0;       /* 🟢 반드시 0이어야 화면 전체를 기준으로 중앙을 잡습니다 */
+    left: 0; 
+    width: 100vw; 
+    height: 100vh; 
+    background: var(--ios-bg); 
+    display: flex; 
+    flex-direction: column;
+    justify-content: center; /* 🟢 수직 중앙 */
+    align-items: center;     /* 🟢 가로 중앙 */
+    z-index: 9999;
+    text-align: center;
+}
+
+#loading div:first-child { 
+    font-size: 64px; margin-bottom: 24px; 
+    animation: iosPulse 0.8s infinite ease-in-out; 
+    display: flex; justify-content: center; align-items: center;
+}
+
+#loading span { font-size: 17px; font-weight: 700; color: var(--text-sub); letter-spacing: -0.5px; opacity: 0.9; display: block; }
+
+@keyframes iosPulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+
+/* [원본 유지] 결과 및 기타 */
+/* [style.css 수정 부분] */
+
+/* 결과 화면 중앙 정렬 및 스크롤 허용 */
+#result-area { 
+    display: none; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: flex-start; /* 상단부터 채우되 중앙 유지 */
+    width: 100%; 
+    min-height: 100vh; 
+    padding: 60px 20px;
+    overflow-y: auto; /* 💡 스크롤 활성화 */
+    text-align: center;
+}
+
+/* 캡처 가이드 레이어 (중앙 정렬) */
+#capture-guide {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 9999;
+    overflow-y: auto; /* 💡 스크롤 활성화 */
+    padding: 20px;
+}
+
+/* 인증 가이드 박스 중앙 정렬 */
+.guide-box {
+    background: white;
+    width: 100%;
+    max-width: 420px;
+    margin: 40px auto; /* 💡 수평 중앙 정렬 */
+    padding: 35px 20px;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 💡 내부 요소 가로 중앙 정렬 */
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+.result-header { width: 100%; max-width: 440px; margin: 0 auto 32px auto; text-align: center; padding: 64px 24px; background: #FFFFFF; border-radius: 44px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.08); }
+#score-text { font-size: 92px; color: #007AFF; font-weight: 900; letter-spacing: -4px; display: flex; align-items: center; justify-content: center; gap: 14px; }
+#score-text::after { content: ''; display: inline-block; width: 48px; height: 48px; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23007AFF"><path d="M23,12l-2.44-2.79l0.34-3.69l-3.61-0.82L15.4,1.5L12,2.96L8.6,1.5L6.71,4.69L3.1,5.5L3.44,9.2L1,12l2.44,2.79l-0.34,3.69 l3.61,0.82L8.6,22.5L12,21.04l3.4,1.46l1.89-3.19l3.61-0.82l-0.34-3.69L23,12z M10.01,17l-3.55-3.55l1.41-1.41l2.14,2.14l5.46-5.46 l1.41,1.41L10.01,17z"/></svg>'); background-size: contain; background-repeat: no-repeat; }
+#score-msg { font-weight: 800; font-size: 24px; color: #1C1C1E; margin-top: 24px; }
+
+#capture-guide { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); display: none; z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+.guide-box { background: var(--glass-bg); border-radius: 32px; padding: 32px 24px; width: 100%; max-width: 420px; text-align: center; color:  }
+#captured-img { width: 100%; border-radius: 18px; margin-bottom: 20px; box-shadow: var(--glass-shadow); }
+
+.menu-card { background: var(--glass-bg); backdrop-filter: var(--glass-blur); border: var(--glass-border); border-radius: 22px; box-shadow: var(--glass-shadow); padding: 20px; margin-bottom: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.menu-card span { font-weight: 700; font-size: 16px; }
+
+#main-menu, #list-area, #quiz-area, #result-area, #capture-guide, #quarter-menu { display: none; }
