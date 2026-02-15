@@ -38,6 +38,92 @@ h2 { font-weight: 800; font-size: 26px; letter-spacing: -0.5px; margin: 40px 0 2
 #main-menu .category-btn h3 { font-size: 24px; margin-bottom: 8px;}
 #main-menu .category-btn p { font-size: 15px; opacity: 0.85; }
 
+/* [style.css 추가] */
+
+/* 랭킹 박스 */
+.ranking-box {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.ranking-box h3 { font-size: 16px; margin: 0 0 10px 0; color: #1C1C1E; }
+.rank-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; padding: 4px 8px; border-radius: 8px; background: rgba(255,255,255,0.5); }
+.rank-item.top3 { background: linear-gradient(90deg, #FFD70033, #FFFFFF00); font-weight: bold; }
+
+/* RPG 닉네임 화면 */
+/* 🌌 닉네임 입력 화면 최종 (여백 버그 완전 해결) */
+#nickname-area {
+    display: none; 
+    position: fixed; /* 화면 레이아웃에 영향 없음 */
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%);
+    z-index: 9999;
+    align-items: center; justify-content: center;
+    margin: 0 !important; padding: 0 !important;
+}
+/* 이하 RPG 카드 관련 스타일 유지 */
+.rpg-overlay { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.rpg-card {
+    background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px);
+    border: 2px solid rgba(0, 122, 255, 0.3); border-radius: 40px;
+    padding: 40px 30px; width: 85%; max-width: 400px; text-align: center;
+}
+/* ... 이하 생략 ... */
+.rpg-container { text-align: center; width: 85%; animation: fadeIn 0.5s ease-out; }
+.rpg-character { font-size: 80px; margin-bottom: 20px; animation: float 2s infinite ease-in-out; }
+.rpg-title { color: white; margin-bottom: 10px; }
+.rpg-subtitle { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 30px; }
+.rpg-input-wrapper input {
+    width: 100%; padding: 15px; border-radius: 15px; border: none;
+    font-size: 18px; text-align: center; font-weight: bold; outline: none;
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+.rpg-button-group { margin-top: 30px; }
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+
+/* 🏆 랭킹 & RPG 닉네임 페이지 스타일 */
+#nickname-area {
+    display: none;
+    position: fixed; /* 화면에 띄우는 방식이라 기존 레이아웃을 건드리지 않음 */
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%);
+    z-index: 9999;
+    align-items: center; justify-content: center;
+    margin: 0; padding: 0;
+}
+.rpg-overlay { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.rpg-card {
+    background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px);
+    border: 2px solid rgba(0, 122, 255, 0.3); border-radius: 40px;
+    padding: 40px 30px; width: 85%; max-width: 400px; text-align: center;
+}
+.rpg-icon { font-size: 50px; margin-bottom: 15px; animation: rpg-float 3s infinite ease-in-out; }
+.rpg-main-title { color: #fff; font-size: 24px; margin: 0; }
+.rpg-sub-title { color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 5px; }
+.rpg-input-box { margin: 30px 0; position: relative; }
+#user-nickname {
+    width: 100%; background: transparent; border: none; color: #fff;
+    font-size: 20px; text-align: center; font-weight: 800; outline: none; padding-bottom: 8px;
+}
+.input-underline { height: 2px; background: linear-gradient(90deg, transparent, #007AFF, transparent); width: 100%; }
+.rpg-btn { width: 100%; padding: 16px; border-radius: 18px; font-weight: 800; border: none; margin-bottom: 10px; cursor: pointer; }
+.rpg-btn.primary { background: #007AFF; color: white; }
+.rpg-btn.secondary { background: rgba(255,255,255,0.1); color: #ccc; }
+@keyframes rpg-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+
+
+
+
 /* [원본 유지] 카테고리 버튼 공통 */
 .category-btn {
     background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
@@ -154,3 +240,58 @@ h2 { font-weight: 800; font-size: 26px; letter-spacing: -0.5px; margin: 40px 0 2
 .menu-card span { font-weight: 700; font-size: 16px; }
 
 #main-menu, #list-area, #quiz-area, #result-area, #capture-guide, #quarter-menu { display: none; }
+
+/* 1. 실제 시험지 입력칸 색상 피드백 */
+.input-correct { background-color: #e8f5e9 !important; border: 2px solid #4caf50 !important; color: #2e7d32 !important; }
+.input-wrong { background-color: #ffebee !important; border: 2px solid #f44336 !important; color: #c62828 !important; }
+
+/* 오답 노트 아이템 스타일 */
+.review-item { background: #fff; border-radius: 10px; padding: 15px; margin-bottom: 12px; border: 1px solid #eee; }
+.review-q { font-weight: bold; margin-bottom: 5px; color: #333; }
+.review-correct-ans { color: #f44336; font-weight: bold; font-size: 0.9em; margin-top: 5px; }
+}
+
+/* 2. 하단 오답 노트 리스트 스타일 */
+.review-item {
+    background: #fdfdfd;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+}
+
+.review-q { font-weight: bold; font-size: 0.95em; color: #444; margin-bottom: 5px; }
+.review-ans-row { font-size: 0.9em; display: flex; flex-direction: column; gap: 3px; }
+.review-user-ans { color: #666; }
+.review-correct-ans { color: #f44336; font-weight: bold; margin-top: 2px; }
+
+.status-ok { color: #4caf50; font-weight: bold; }
+.status-no { color: #f44336; font-weight: bold; }
+
+/* 뒤로가기/네비게이션 버튼 공통 스타일 */
+.back-btn, .nav-btn {
+    cursor: pointer;
+    padding: 10px 15px;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #666;
+    display: inline-block;
+    transition: all 0.2s;
+}
+
+.back-btn:hover, .nav-btn:hover {
+    color: #007AFF;
+    transform: translateX(-3px); /* 뒤로가는 느낌의 애니메이션 */
+}
+
+/* 상단 네비게이션 바 레이아웃 */
+.quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+/* 작성 칸 색상 피드백 */

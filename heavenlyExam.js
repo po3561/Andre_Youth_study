@@ -104,7 +104,7 @@ function renderChapterList(qName) {
         `;
         
         // 클릭 시 실제 퀴즈 화면으로 이동
-        card.onclick = () => startHeavenlyQuiz(ch);
+        card.onclick = () => openNicknamePage(ch);
         fileContainer.appendChild(card);
     });
     window.scrollTo(0, 0);
@@ -185,3 +185,6 @@ function startHeavenlyQuiz(chapter) {
     });
     window.scrollTo(0,0);
 }
+
+
+

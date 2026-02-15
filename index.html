@@ -4,85 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>👑 계시록 통달 챌린지 👑</title>
-    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="nickname-area" style="display:none;">
+        <div class="rpg-overlay">
+            <div class="rpg-card">
+                <div class="rpg-header">
+                    <div class="rpg-icon">⚔️</div>
+                    <h2 class="rpg-main-title">통달자의 성명</h2>
+                    <p class="rpg-sub-title">생명책에 기록될 이름을 정하십시오.</p>
+                </div>
+                <div class="rpg-input-box">
+                    <input type="text" id="user-nickname" placeholder="닉네임 입력 (8자)" maxlength="8">
+                    <div class="input-underline"></div>
+                </div>
+                <div class="rpg-actions">
+                    <button class="rpg-btn primary" id="btn-name-start">이름 걸고 시작하기</button>
+                    <button class="rpg-btn secondary" id="btn-anon-start">은둔 통달자로 진행</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div id="loading"><div>⏳</div>예비 제사장님 업적 불러오는 중...</div>
-     
+
         <div id="main-menu">
             <h2>이제는 계시록 통달이다!</h2>
+            <div id="ranking-section" class="ranking-box">
+                <h3>👑 천국고시 통달 랭킹</h3>
+                <div id="ranking-list"><p>랭킹을 불러오는 중...</p></div>
+            </div>
             <div class="category-btn" onclick="showQuarterMenu()">
                 <h3>🏆 천국고시 암기 시험</h3>
                 <p>계1~22장<br>분기별, 장별 선택시험!</p>
             </div>
-            <!--
-            <div class="category-btn" onclick="showFolder('이번 주 시험 문제')">
-                <h3>📖 주간 시험</h3>
-                <p>이번주 주일<br>인맞은 확인 시험 문제집</p>
-            </div> -->
         </div>
 
-        <div id="quarter-menu">
+        <div id="quarter-menu" style="display:none;">
             <div class="back-btn" onclick="showMain()">〈 뒤로</div>
             <h2>분기 선택</h2>
-            <div class="category-btn1" ><h3>문제는 다시 들어갈때 마다 랜덤으로 재생성 됩니다.</h3></div>
+            <div class="category-btn1"><h3>문제는 랜덤으로 생성됩니다.</h3></div>
             <div class="grid-menu">
-                <div class="category-btn" onclick="loadQuarterData('1분기')" ><h3>1분기</h3><p>1-6장</p></div>
-                <div class="category-btn" onclick="loadQuarterData('2분기')" ><h3>2분기</h3><p>7-12장</p></div>
-                <div class="category-btn" onclick="loadQuarterData('3분기')" ><h3>3분기</h3><p>13-17장</p></div>
-                <div class="category-btn" onclick="loadQuarterData('4분기')" ><h3>4분기</h3><p>18-22장</p></div>
+                <div class="category-btn" onclick="loadQuarterData('1분기')"><h3>1분기</h3><p>1-6장</p></div>
+                <div class="category-btn" onclick="loadQuarterData('2분기')"><h3>2분기</h3><p>7-12장</p></div>
+                <div class="category-btn" onclick="loadQuarterData('3분기')"><h3>3분기</h3><p>13-17장</p></div>
+                <div class="category-btn" onclick="loadQuarterData('4분기')"><h3>4분기</h3><p>18-22장</p></div>
             </div>
         </div>
 
-        <div id="list-area">
-            <div class="back-btn" onclick="showMain()">〈 목록</div>
+        <div id="list-area" style="display:none;">
+            <div class="back-btn" onclick="showQuarterMenu()">〈 뒤로</div>
             <div id="file-container"></div>
         </div>
 
-        <div id="quiz-area">
+        <div id="quiz-area" style="display:none;">
             <div class="quiz-nav">
-    <div class="nav-btn" onclick="showMain()">〈 뒤로가기</div>
-    <div class="nav-btn" onclick="resetAllQuiz()">🔄 문답 전체 초기화</div>
-</div>
-            
+                <div class="nav-btn" onclick="backToListArea()">〈 뒤로</div>
+                <div class="nav-btn" onclick="resetAllQuiz()">🔄 초기화</div>
+            </div>
             <div id="quiz-title"></div>
             <div id="quiz-text"></div>
-           <button class="submit-btn" onclick="submitQuiz()">시험지 제출</button>
+            <button class="submit-btn" onclick="submitQuiz()">시험지 제출</button>
         </div>
 
-        <div id="result-area">
+        <div id="result-area" style="display:none;">
+            <div class="quiz-nav" style="justify-content: flex-start; margin-bottom: 20px;">
+                <div class="nav-btn" onclick="showMain()">〈 홈으로</div>
+            </div>
+            
             <div id="capture-target" class="result-header">
                 <h2>오늘 암송 인증</h2>
                 <div id="score-text"></div>
                 <div id="score-msg"></div>
-                <p>© 안드레 청년회 계시록 통달 챌린지</p>
+                <p>© 청년회 계시록 통달 챌린지</p>
             </div>
-            <button class="submit-btn" onclick="autoCaptureAndShare()">📸 챌린지 인증하기</button>
+
+            <div id="review-section" style="margin-top: 30px; text-align: left;">
+                <hr style="border: 0; height: 1px; background: #eee; margin-bottom: 20px;">
+                <h3 style="text-align: center; margin-bottom: 20px;">📝 통달 확인 (오답 노트)</h3>
+                <div id="review-list"></div>
+            </div>
+            
+            <button class="submit-btn" onclick="autoCaptureAndShare()" style="margin-top: 20px;">📸 챌린지 인증하기</button>
         </div>
     </div>
 
-    <div id="capture-guide">
-        <div class="guide-box" id="loa">
-            <h3 class="back-btsssn2" >✅ 인증 준비 완료</h3>
-            <p class="guide-box1">화면을 캡쳐한 뒤,<br>챌린지 방에 인증해 주세요!</p>
-            
-            <img id="captured-img" src="">
-            
+    <div id="capture-guide" style="display:none;">
+        <div class="guide-box">
+            <h3>✅ 인증 준비 완료</h3>
+            <p>화면을 캡쳐한 뒤, 챌린지 방에 인증해 주세요!</p>
+            <div id="captured-img-placeholder"></div>
             <button class="submit-btn" onclick="goToChallengeGroup()">🔗 챌린지 방 바로가기</button>
-            
-            <button class="submit-btn secondary" onclick="goToStart()">
-                🏠 처음으로 돌아가기
-            </button>
+            <button class="submit-btn secondary" onclick="goToStart()">🏠 처음으로</button>
         </div>
     </div>
 
     <script src="common.js"></script>
+    <script src="rank.js"></script>
     <script src="heavenlyExam.js"></script>
     <script src="weeklyExam.js"></script>
 </body>
