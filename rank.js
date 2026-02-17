@@ -1,45 +1,80 @@
 /**
- * 👑 rank.js: 장 정보, 닉네임, 점수 통합 수집 및 실시간 랭킹 분석 시스템
+ * 👑 rank.js: 닉네임 설정 및 화면 전환 연결 엔진
+ * 수정 사항: 
+ * 1. [Fix] 챕터 클릭 시 닉네임 입력창(nickname-area)이 무조건 최상단에 뜨도록 강제 설정
+ * 2. z-index와 display 속성을 명확히 지정하여 빈 화면 문제 해결
  */
 
-// 새로운 배포 주소를 아래에 적용했습니다.
+// 랭킹 서버 URL
 window.RANKING_SERVER_URL = "https://script.google.com/macros/s/AKfycbwjTb5BRXO6TEEzj0pZlYqI3qwFSk4sjD9p9R_WANM2csrjBI0Ar-JOgrORZVxoXYf6_Q/exec";
 
 let userTempNickname = "은둔 통달자";
 let currentChapter = "전체";
-let isSaving = false; // 중복 저장 방지 잠금장치
+let isSaving = false;
 
 /**
- * 서버에서 분석된 랭킹 데이터를 가져와 UI에 표시합니다.
+ * 1. 🚀 [핵심] 챕터 선택 시 닉네임 입력창 열기 (강력 모드)
+ */
+function openNicknamePage(chapterData) {
+    console.log("닉네임 페이지 호출됨:", chapterData); // 디버깅용 로그
+    currentChapter = chapterData; 
+
+    // 1. 모든 배경 화면 숨기기
+    if (typeof hideAllSections === 'function') {
+        hideAllSections();
+    } else {
+        // common.js가 없을 경우를 대비한 하드코딩 숨김
+        document.getElementById('main-menu').style.display = 'none';
+        document.getElementById('list-area').style.display = 'none';
+        document.getElementById('quiz-area').style.display = 'none';
+    }
+
+    // 2. 닉네임 입력창 강제 노출
+    const nicknameArea = document.getElementById('nickname-area');
+    if (nicknameArea) {
+        nicknameArea.style.display = 'flex'; // flex로 설정하여 중앙 정렬 유지
+        nicknameArea.style.zIndex = '9999'; // 다른 요소보다 무조건 위에 뜨도록 설정
+        nicknameArea.style.opacity = '1';
+    } else {
+        alert("오류: 닉네임 입력창(HTML ID: nickname-area)을 찾을 수 없습니다.");
+        return;
+    }
+
+    // 3. UI 버튼 상태 업데이트 (버튼들이 닉네임 창을 가리지 않도록 숨김)
+    if (typeof updateNavUI === 'function') {
+        updateNavUI(false); 
+    }
+    const topPlus = document.getElementById('top-right-plus');
+    if(topPlus) topPlus.style.display = 'none';
+}
+
+/**
+ * 2. 랭킹 UI 업데이트
  */
 async function updateRankingUI() {
     const listEl = document.getElementById('ranking-list');
     if (!listEl) return;
 
     try {
-        // 캐시 방지를 위해 URL 뒤에 타임스탬프(?t=...)를 추가합니다.
         const res = await fetch(`${window.RANKING_SERVER_URL}?action=getRank&t=${new Date().getTime()}`);
         const ranks = await res.json();
         
         listEl.innerHTML = "";
         if (!ranks || ranks.length === 0) {
-            listEl.innerHTML = "<p style='text-align:center; padding:20px;'>아직 등록된 랭킹이 없습니다.</p>";
+            listEl.innerHTML = "<p style='text-align:center; padding:20px; color:#555;'>아직 랭킹이 없습니다.</p>";
             return;
         }
 
-        // 상위 10명 표시
-        ranks.slice(0, 7).forEach((item, index) => {
+        ranks.slice(0, 15).forEach((item, index) => {
             const div = document.createElement('div');
-            div.className = `rank-item ${index < 3 ? 'top3' : ''}`;
-            div.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee;";
-            
+            div.className = 'rank-item'; 
+            div.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px;";
             div.innerHTML = `
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-weight:bold; color:#888; width:20px;">${index + 1}</span>
-                    <span style="background:#e3f2fd; color:#1976d2; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; border:1px solid #bbdefb;">${item.chapter || '전체'}</span>
+                    <span class="rank-num">${index + 1}</span>
                     <span style="font-weight:500;">${item.name}</span>
                 </div>
-                <span style="font-weight:bold; color:#007AFF;">${item.score}점</span>
+                <span style="font-weight:bold;">${item.score}점</span>
             `;
             listEl.appendChild(div);
         });
@@ -49,98 +84,97 @@ async function updateRankingUI() {
 }
 
 /**
- * 닉네임 페이지를 열고 선택된 장 정보를 감지합니다.
+ * 3. 버튼 이벤트 리스너 (DOM 로드 후 실행)
  */
-function openNicknamePage(chapterData) {
-    if (chapterData) {
-        currentChapter = chapterData.title || chapterData.name || "전체";
+document.addEventListener('DOMContentLoaded', () => {
+    // [이름 걸고 시작하기] 버튼
+    const btnName = document.getElementById('btn-name-start');
+    if (btnName) {
+        btnName.onclick = () => {
+            const input = document.getElementById('user-nickname');
+            const val = input.value.trim();
+            if (!val) {
+                alert("닉네임을 입력해주세요!");
+                return;
+            }
+            userTempNickname = val;
+            startGame();
+        };
     }
 
-    const nickArea = document.getElementById('nickname-area');
-    if (nickArea) nickArea.style.display = 'flex';
-
-    isSaving = false; // 새로운 시험 시작 시 잠금 해제
-
-    document.getElementById('btn-name-start').onclick = () => {
-        const input = document.getElementById('user-nickname').value.trim();
-        if(!input) return alert("이름을 정하셔야 랭킹에 기록됩니다!");
-        userTempNickname = input;
-        startFinalQuiz(chapterData);
-    };
-
-    document.getElementById('btn-anon-start').onclick = () => {
-        userTempNickname = "은둔 통달자";
-        startFinalQuiz(chapterData);
-    };
-}
+    // [은둔 고수로 시작하기] 버튼
+    const btnAnon = document.getElementById('btn-anon-start');
+    if (btnAnon) {
+        btnAnon.onclick = () => {
+            userTempNickname = "은둔 통달자";
+            startGame();
+        };
+    }
+});
 
 /**
- * 시험 화면 전환
+ * 4. 🏁 실제 게임 시작
  */
-function startFinalQuiz(chapterData) {
-    const nickArea = document.getElementById('nickname-area');
-    if (nickArea) nickArea.style.display = 'none';
+function startGame() {
+    // 닉네임 창 숨기기
+    document.getElementById('nickname-area').style.display = 'none';
+
+    // 퀴즈 화면으로 전환
     if (typeof startHeavenlyQuiz === 'function') {
-        startHeavenlyQuiz(chapterData); 
+        startHeavenlyQuiz(currentChapter);
+    } else {
+        alert("퀴즈 시작 함수를 찾을 수 없습니다. 새로고침 해주세요.");
     }
 }
 
 /**
- * 데이터를 드라이브에 안전하게 저장합니다.
+ * 5. 점수 저장
  */
 async function saveScoreToDB(score) {
-    if (!window.RANKING_SERVER_URL || isSaving) return; 
-
-    isSaving = true; // 저장 프로세스 잠금
+    if (isSaving) return;
+    isSaving = true;
     try {
         await fetch(window.RANKING_SERVER_URL, {
             method: 'POST',
-            body: JSON.stringify({ 
-                action: "saveScore", 
-                name: userTempNickname, 
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'save',
+                name: userTempNickname,
                 score: score,
-                chapter: currentChapter
+                chapter: currentChapter.name || currentChapter
             })
         });
         updateRankingUI(); 
-    } catch (e) { 
-        console.error("저장 실패:", e); 
-        isSaving = false; // 실패 시 잠금 해제
-    }
+    } catch (e) { console.error(e); } finally { isSaving = false; }
 }
 
 /**
- * 인증 및 캡쳐 실행
+ * 6. 캡쳐 기능
  */
 async function autoCaptureAndShare() {
     const scoreText = document.getElementById('score-text')?.innerText || "0";
     const finalScore = parseInt(scoreText.replace(/[^0-9]/g, "")) || 0;
-
-    // 저장 실행
     await saveScoreToDB(finalScore);
 
     const target = document.getElementById('capture-target');
     if (target && typeof html2canvas !== 'undefined') {
         try {
-            const canvas = await html2canvas(target, { scale: 2 });
+            const canvas = await html2canvas(target, { scale: 2, backgroundColor: null });
             const placeholder = document.getElementById('captured-img-placeholder');
             if (placeholder) {
                 placeholder.innerHTML = "";
                 const img = new Image();
                 img.src = canvas.toDataURL("image/png");
                 img.style.width = "100%";
+                img.style.borderRadius = "15px";
                 placeholder.appendChild(img);
             }
             document.getElementById('result-area').style.display = 'none';
             document.getElementById('capture-guide').style.display = 'block';
-        } catch (e) {
-            console.error("이미지 생성 실패");
-        }
+            if(typeof updateNavUI === 'function') updateNavUI(false);
+        } catch (e) { console.error(e); }
     }
 }
 
 function goToStart() { location.reload(); }
-function goToChallengeGroup() { window.open("https://t.me/+akm0mVey8WQ4OTBl", "_blank"); }
-
-// 초기 실행
-window.addEventListener('DOMContentLoaded', updateRankingUI);

@@ -1,10 +1,10 @@
 /**
- * 👑 common.js: 오답 노트 및 단계별 뒤로가기 통합본
+ * 👑 common.js: 오답 노트 및 단계별 UI 전환 통합 엔진
  */
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// 백엔드 서버 주소
+// 백엔드 서버 주소 및 텔레그램 링크
 const SERVER_URL = "https://script.google.com/macros/s/AKfycbw238LQiorJpRUX_okKLvyH6EB65GSgq0D9kfiJNpWiUd35LZG_9o5sEbh0ZdJRC9TA/exec";
 const GROUP_LINK = "https://t.me/+akm0mVey8WQ4OTBl"; 
 
@@ -12,7 +12,7 @@ let allData = [];
 let currentAnswers = []; 
 
 /**
- * 초기화 및 데이터 로드
+ * 1. 초기화 및 데이터 로드
  */
 async function init() {
     const loader = document.getElementById('loading');
@@ -24,12 +24,29 @@ async function init() {
         console.error("데이터 로드 실패");
     } finally {
         if (loader) loader.style.display = 'none';
-        showMain();
+        showMain(); // 초기 로드 후 메인 화면으로
     }
 }
 
 /**
- * [핵심 로직] 시험지 제출 및 오답 노트 생성
+ * 2. ✨ 네비게이션 UI 업데이트 (버튼 위치 자동 조정)
+ * 메인 화면에서는 하단 바 노출, 다른 화면에서는 상단 플러스 버튼 노출
+ */
+function updateNavUI(isMain) {
+    const bottomBar = document.getElementById('bottom-action-bar');
+    const topPlus = document.getElementById('top-right-plus');
+    
+    if (isMain) {
+        if (bottomBar) bottomBar.style.display = 'flex';
+        if (topPlus) topPlus.style.display = 'none';
+    } else {
+        if (bottomBar) bottomBar.style.display = 'none';
+        if (topPlus) topPlus.style.display = 'flex';
+    }
+}
+
+/**
+ * 3. [핵심 로직] 시험지 제출 및 오답 노트 생성
  */
 function submitQuiz() {
     const inputs = document.querySelectorAll('.q-inline-input');
@@ -37,16 +54,14 @@ function submitQuiz() {
 
     let correctCount = 0;
     const total = currentAnswers.length;
-    const userAnswers = []; // 오답 노트를 위해 사용자의 답을 저장
+    const userAnswers = []; 
 
     inputs.forEach((input, index) => {
         const userVal = input.value.trim();
-        userAnswers.push(userVal); // 사용자 입력값 수집
+        userAnswers.push(userVal); 
         
         const correctVal = currentAnswers[index] ? currentAnswers[index].trim().replace(/\s/g, '') : "";
         const cleanUserVal = userVal.replace(/\s/g, '');
-        
-        // 정답 비교 (공백 제거 후 비교)
         const isCorrect = (cleanUserVal === correctVal && cleanUserVal !== "");
 
         if (isCorrect) {
@@ -57,23 +72,22 @@ function submitQuiz() {
             input.classList.add('input-wrong');
             input.classList.remove('input-correct');
         }
-        input.readOnly = true; // 채점 후 수정 불가
+        input.readOnly = true; 
     });
 
     const finalScore = total > 0 ? Math.round((correctCount / total) * 100) : 0;
     
-    // 1. 랭킹 서버에 점수 저장 (rank.js 연동)
     if (typeof saveScoreToDB === 'function') {
         saveScoreToDB(finalScore);
     }
 
-    // 2. ✨ 오답 노트 생성 함수 호출 (이 부분이 추가되었습니다)
     renderReviewNote(currentAnswers, userAnswers);
 
-    // 3. 결과 화면 표시
     document.getElementById('quiz-area').style.display = 'none';
     document.getElementById('result-area').style.display = 'flex';
     document.getElementById('score-text').textContent = finalScore + "점";
+    
+    updateNavUI(false); // 결과 화면에서도 상단 버튼으로 전환
 
     const scoreMsg = document.getElementById('score-msg');
     if (scoreMsg) {
@@ -83,13 +97,12 @@ function submitQuiz() {
 }
 
 /**
- * 📝 오답 노트를 화면에 그리는 함수
+ * 4. 📝 오답 노트를 화면에 그리는 함수
  */
 function renderReviewNote(correctAnswers, userAnswers) {
     const listEl = document.getElementById('review-list');
     if (!listEl) return;
-
-    listEl.innerHTML = ""; // 기존 내용 초기화
+    listEl.innerHTML = ""; 
 
     correctAnswers.forEach((correctVal, index) => {
         const uAns = (userAnswers[index] || "").trim();
@@ -112,7 +125,28 @@ function renderReviewNote(correctAnswers, userAnswers) {
 }
 
 /**
- * 화면 전환 함수들 (뒤로가기 포함)
+ * 5. ✨ 바텀 시트 팝업 토글 함수 (모션 버그 해결)
+ * display와 opacity의 충돌을 방지하기 위해 setTimeout을 사용합니다.
+ */
+function toggleIOSSheet() {
+    const overlay = document.getElementById('ios-sheet-overlay');
+    if (!overlay) return;
+
+    if (overlay.classList.contains('active')) {
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 400); // CSS transition 시간과 동기화
+    } else {
+        overlay.style.display = 'block';
+        setTimeout(() => {
+            overlay.classList.add('active');
+        }, 10); // 렌더링 지연 후 애니메이션 시작
+    }
+}
+
+/**
+ * 6. 화면 전환 함수들 (UI 업데이트 연동)
  */
 function hideAllSections() {
     ['main-menu', 'list-area', 'quiz-area', 'result-area', 'quarter-menu', 'capture-guide', 'nickname-area'].forEach(id => {
@@ -124,16 +158,19 @@ function hideAllSections() {
 function showMain() {
     hideAllSections();
     document.getElementById('main-menu').style.display = 'block';
+    updateNavUI(true); // 메인 화면이므로 하단 바 노출
 }
 
 function showQuarterMenu() {
     hideAllSections();
     document.getElementById('quarter-menu').style.display = 'block';
+    updateNavUI(false); // 분기 선택부터는 상단 플러스 버튼으로 전환
 }
 
 function backToListArea() {
     hideAllSections();
     document.getElementById('list-area').style.display = 'block';
+    updateNavUI(false);
 }
 
 function resetAllQuiz() {
@@ -147,5 +184,8 @@ function resetAllQuiz() {
     }
 }
 
-// 초기 실행
+function goToChallengeGroup() {
+    window.open(GROUP_LINK, '_blank');
+}
+
 window.addEventListener('DOMContentLoaded', init);

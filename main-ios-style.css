@@ -1,0 +1,260 @@
+/**
+ * 👑 main-ios-style.css
+ * 컨셉: RPG 성스러운 새벽 하늘 + 테두리 빛(Rim Light) + 아지랑이 D-Day 바
+ */
+
+:root {
+    /* 🌌 배경: 웅장한 새벽 하늘 (딥 블루 -> 성스러운 빛) */
+    --rpg-sky-gradient: linear-gradient(180deg, #2b32b2 0%, #1488cc 50%, #d8e8f8 100%);
+    
+    /* 💎 엣지 글래스 (테두리 빛 강조) */
+    --glass-bg: rgba(255, 255, 255, 0.15); 
+    --glass-border: 1px solid rgba(255, 255, 255, 0.5); /* 테두리를 밝고 선명하게 */
+    --glass-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.2), /* 깊은 그림자 */
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.6), /* 상단 하이라이트 (빛 맺힘) */
+        inset 0 0 20px 0 rgba(255, 255, 255, 0.05); /* 내부 은은한 광 */
+    --glass-blur: blur(25px);
+
+    /* 🏅 랭킹 메탈 질감 (보석 같은 느낌) */
+    --gold-metal: linear-gradient(135deg, #FFD700 0%, #FDB931 50%, #9E7D08 100%);
+    --silver-metal: linear-gradient(135deg, #E0E0E0 0%, #BDBDBD 50%, #757575 100%);
+    --bronze-metal: linear-gradient(135deg, #F4A460 0%, #CD853F 50%, #8B4513 100%);
+    
+    --ios-blue: #007AFF;
+}
+
+/* 1. ✨ 배경: 정적이지만 웅장한 하늘 */
+body.main-body-theme {
+    background: var(--rpg-sky-gradient);
+    background-attachment: fixed;
+    min-height: 100vh;
+    margin: 0; padding: 0;
+    position: relative;
+    color: white; /* 기본 텍스트 화이트로 변경 (배경이 어두우므로) */
+}
+
+/* 구름 느낌의 은은한 오버레이 (이미지 없이 CSS로 구현) */
+body.main-body-theme::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15), transparent 40%),
+        radial-gradient(circle at 80% 10%, rgba(255,255,255,0.1), transparent 30%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 메인 컨테이너 여백 축소 (밀도 높임) */
+#main-menu {
+    padding: 30px 0 120px 0; /* 상단 여백 대폭 축소 (60px -> 30px) */
+}
+
+/* ================= ✨ 카드 공통 스타일 (엣지 라이트) ================= */
+.glass-card, .glass-list {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: var(--glass-border);
+    border-radius: 24px;
+    padding: 20px; /* 내부 패딩 축소 (28px -> 20px) */
+    margin-bottom: 16px; /* 카드 간격 축소 (24px -> 16px) */
+    
+    /* 핵심: 테두리 빛 효과 */
+    box-shadow: var(--glass-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ================= 3. D-Day 카드 (HUD 느낌) ================= */
+.dday-card {
+    background: rgba(20, 30, 60, 0.4) !important; /* 조금 더 진한 네이비 */
+    border: 1px solid rgba(130, 200, 255, 0.5) !important; /* 푸른 빛 테두리 */
+}
+
+.dday-text {
+    font-size: 17px; font-weight: 700;
+    margin-bottom: 10px; /* 간격 축소 */
+    display: flex; justify-content: space-between; align-items: center;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.dday-highlight {
+    color: #FFD56B; font-size: 20px; font-weight: 800;
+    text-shadow: 0 0 15px rgba(255, 213, 107, 0.8); /* 글로우 효과 */
+}
+
+.dday-bar-bg {
+    height: 10px; /* 바 두께 축소 */
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ✨ [수정] 움직이는 아지랑이 바 */
+.dday-bar-fill {
+    height: 100%;
+    width: 0%; /* JS가 채워줌 */
+    border-radius: 5px;
+    
+    /* 따뜻한 골드/오렌지 아지랑이 그라데이션 */
+    background: linear-gradient(90deg, #FFB74D, #FF8A65, #FFD54F, #FFB74D);
+    background-size: 200% 100%; /* 배경을 크게 잡아서 흐르게 함 */
+    
+    /* 아지랑이 애니메이션 */
+    animation: shimmerBar 2s linear infinite;
+    box-shadow: 0 0 15px rgba(255, 183, 77, 0.6);
+    
+    /* 너비 변화 부드럽게 */
+    transition: width 1.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* 배경 이동 키프레임 (아지랑이 효과) */
+@keyframes shimmerBar {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+/* ================= 4. 랭킹 리스트 (퀘스트 보드) ================= */
+.main-section-title {
+    font-size: 1.6em; font-weight: 800;
+    /* 제목 여백 축소 */
+    color: rgba(255, 255, 255, 0.62);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.44);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: var(--glass-border);
+    border-radius: 24px;
+    padding: 15px; /* 내부 패딩 축소 (28px -> 20px) */
+    margin-bottom: 16px; /* 카드 간격 축소 (24px -> 16px) */
+    
+    /* 핵심: 테두리 빛 효과 */
+    box-shadow: var(--glass-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 랭킹 컨테이너 */
+.glass-list {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px; /* 리스트 내부 여백 타이트하게 */
+}
+
+#ranking-list .rank-item {
+    background: rgba(255, 255, 255, 0.85) !important; /* 가독성을 위해 밝게 */
+    border-radius: 16px !important;
+    margin-bottom: 8px !important; /* 아이템 간격 축소 */
+    padding: 14px 18px !important; /* 아이템 높이 축소 */
+    border: none !important;
+    
+    /* 아이템에도 엣지 라이트 적용 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 1px 0 rgb(255, 255, 255) !important;
+    
+    color: #333 !important;
+    font-weight: 700 !important;
+    display: flex !important; align-items: center !important; justify-content: space-between !important;
+}
+
+/* 🥇 1등: 골드 메탈 + 빛나는 테두리 */
+#ranking-list .rank-item:nth-child(1) {
+    background: var(--gold-metal) !important;
+    color: #5d4037 !important;
+    border: 1px solid rgba(255, 255, 0, 0.5) !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+}
+
+/* 🥈 2등: 실버 메탈 */
+#ranking-list .rank-item:nth-child(2) {
+    background: var(--silver-metal) !important;
+    color: #333 !important;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 🥉 3등: 브론즈 메탈 */
+#ranking-list .rank-item:nth-child(3) {
+    background: var(--bronze-metal) !important;
+    color: #3e2723 !important;
+    border: 1px solid rgba(255, 160, 122, 0.5) !important;
+}
+
+.rank-num { font-weight: 900; margin-right: 8px; font-size: 1.1em; }
+
+
+/* ================= 5. ✨ 하단 글래스 네비게이션 바 (플로팅 캡슐) ================= */
+.bottom-nav-bar.glass-nav {
+    position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+    width: calc(100% - 30px); max-width: 480px; padding: 10px;
+    display: flex; align-items: center; gap: 10px; z-index: 1000;
+    
+    /* 강력한 글래스 + 테두리 빛 */
+    background: rgba(255, 255, 255, 0.25); 
+    backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 40px;
+    
+    /* 하단 바 그림자 + 내부 광 */
+    box-shadow: 
+        0 15px 35px rgba(0,0,0,0.2), 
+        inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+/* 왼쪽 FAB 플러스 버튼 (크리스탈 구슬) */
+.fab-plus {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    color: var(--ios-blue); font-size: 26px; font-weight: 300;
+    flex-shrink: 0; display: flex; justify-content: center; align-items: center; cursor: pointer;
+}
+.fab-plus:active { transform: scale(0.9); }
+
+/* 오른쪽 메인 버튼 (마법석 느낌) */
+.main-pill-btn {
+    flex: 1; height: 48px; border-radius: 24px;
+    /* 영롱한 블루 그라데이션 */
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white; border: none; font-size: 16px; font-weight: 800;
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 5px 15px rgba(0, 198, 255, 0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+    cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.main-pill-btn:active { transform: scale(0.98); }
+
+
+/* ================= 6. 상단 플러스 버튼 (메인 외 화면) ================= */
+.top-plus-btn {
+    position: fixed; top: 15px; right: 15px; width: 40px; height: 40px;
+    border-radius: 50%; 
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px); color: white;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    font-size: 24px; z-index: 1500;
+    cursor: pointer; display: flex; justify-content: center; align-items: center;
+}
+
+/* ================= 7. 팝업 (바텀 시트) ================= */
+.sheet-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 10, 0.6); /* 어두운 밤하늘 배경 */
+    z-index: 10000; display: none; opacity: 0; transition: opacity 0.3s;
+}
+.sheet-overlay.active { opacity: 1; }
+
+.ios-sheet {
+    position: absolute; bottom: -100%; left: 0; width: 100%;
+    background: rgba(118, 188, 255, 0.77);
+    backdrop-filter: blur(30px);
+    border-radius: 24px 24px 0 0; padding: 20px; box-sizing: border-box;
+    transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    color: #1488cc;
+}
+.sheet-overlay.active .ios-sheet { bottom: 0; }
+
+.sheet-handle { width: 40px; height: 5px; background: #C7C7CC; border-radius: 3px; margin: 0 auto 20px; }
+.sheet-menu-list { background: rgba(239, 239, 244, 1); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; gap: 1px; }
+.sheet-item { background: white; padding: 16px; text-align: center; font-size: 16px; cursor: pointer; color: #333; font-weight: 600; }
+.sheet-item.close { color: #FF3B30; font-weight: 800; margin-top: 10px; border-radius: 14px; }
