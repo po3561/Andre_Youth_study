@@ -37,12 +37,41 @@ body {
     -webkit-font-smoothing: antialiased; 
 }
 
+<<<<<<< HEAD
 /* 컨테이너: 상단 버튼 공간 확보를 위해 padding-top 증가 */
 .container { 
     width: 100%; max-width: 500px; margin: 0 auto; 
     padding: 20px 20px 120px 20px; /* 상단 80px 여백 (버튼 공간) */
     display: flex; flex-direction: column; min-height: 100vh;
     position: relative; 
+=======
+.container { max-width: 520px; margin: 0 auto; padding: 24px 16px; display: flex; flex-direction: column; min-height: 100vh; }
+h2 { font-weight: 800; font-size: 26px; letter-spacing: -0.5px; margin: 40px 0 24px; text-align: center; }
+
+/* [원본 유지] 메인 메뉴 버튼 레이아웃 */
+#main-menu { display: flex; flex-direction: column; gap: 20px; width: 100%; margin-top: 10px; }
+#main-menu .category-btn { width: 90%; border-radius: 32px; flex: none; margin: 1em ; text-align: center }
+.category-btn1{
+     background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+    border: var(--glass-border); box-shadow: var(--glass-shadow); border-radius: 28px;  flex: 1; min-width: 0; cursor: pointer; 
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); text-align: center;
+    display: flex; flex-direction: column; justify-content: center;
+    width:100%; border-radius: 20px; flex: none; margin: 1em 0 ; text-align: center;color: #FF3B30;background-color: rgba(255, 255, 255, 0);}
+.category-btn1 h3 {font-size: 0.8em}
+#main-menu .category-btn h3 { font-size: 24px; margin-bottom: 8px;}
+#main-menu .category-btn p { font-size: 15px; opacity: 0.85; }
+
+/* [style.css 추가] */
+
+/* 랭킹 박스 */
+.ranking-box {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+>>>>>>> 3364f54d110230f726ab82c68b30af84a263b03d
 }
 
 /* 타이틀 폰트 */
