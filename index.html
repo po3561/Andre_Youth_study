@@ -24,16 +24,16 @@
                     <p class="rpg-sub-title">제사장으로 기록될 이름을 정하십시오.</p>
                 </div>
                 <div class="rpg-input-box">
-<<<<<<< HEAD
+
                     <input type="text" id="user-nickname" placeholder="닉네임 입력 (20자 이하)" maxlength="8">
-=======
-                    <input type="text" id="user-nickname" placeholder="닉네임 입력 (20자)" maxlength="8">
->>>>>>> 3364f54d110230f726ab82c68b30af84a263b03d
+
+                    
+
                     <div class="input-underline"></div>
                 </div>
                 <div class="rpg-actions">
                     <button class="rpg-btn primary" id="btn-name-start">닉네임으로 시작하기</button>
-                    <button class="rpg-btn secondary" id="btn-anon-start">익명속에 은둔 고수로 시작</button>
+                    <button class="rpg-btn secondary" id="btn-anon-start">은둔 고수로 시작</button>
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
 
         <div id="main-menu">
             <div class="glass-card dday-card">
-                <div class="dday-text">천국고시 시험 까지 <span id="dday-count" class="dday-highlight">D-Day</span></div>
+                <div class="dday-text">천국고시 시험 까지<span id="dday-count" class="dday-highlight">D-Day</span></div>
                 <div class="dday-bar-bg">
                     <div id="dday-bar" class="dday-bar-fill"></div>
                 </div>
@@ -100,7 +100,7 @@
             </div>
 
             <div id="review-section" style="width: 100%;">
-                <h3 style="text-align: center; margin-bottom: 10px; font-size: 1.1rem;">📝 통달 확인 (오답 노트)</h3>
+                <h3 style="text-align: center; margin-bottom: 10px; font-size: 1.1rem;">오답확인</h3>
                 <div id="review-list"></div>
             </div>
         </div>
@@ -118,7 +118,7 @@
     <div id="bottom-action-bar" class="bottom-nav-bar glass-nav">
         <button class="fab-plus" onclick="toggleIOSSheet()"><span>+</span></button>
         <button class="main-pill-btn" onclick="showQuarterMenu()">
-            👑 천국고시 암기 시험 바로가기
+            👑 암기시험응시
         </button>
     </div>
 
@@ -126,9 +126,9 @@
         <div class="ios-sheet" onclick="event.stopPropagation()">
             <div class="sheet-handle"></div>
             <div class="sheet-content">
-                <h3>통달 도우미 메뉴</h3>
+                <h3>메뉴</h3>
                 <div class="sheet-menu-list">
-                    <div class="sheet-item" onclick="goToChallengeGroup()">🚀 커뮤니티</div>
+                    <div class="sheet-item" onclick="goToChallengeGroup()">🚀 업데이트 예정</div>
                     <div class="sheet-item close" onclick="toggleIOSSheet()">닫기</div>
                 </div>
             </div>
@@ -145,7 +145,7 @@
             // 1. 목표 날짜 설정 (2026년 3월 28일)
             const targetDate = new Date('2026-03-28T00:00:00');
             // 2. 시작 날짜 설정 (진행률 계산용, 예: 2026년 1월 1일)
-            const startDate = new Date('2026-01-01T00:00:00');
+            const startDate = new Date('2026-02-01T00:00:00');
             const today = new Date();
 
             // D-Day 텍스트 계산
