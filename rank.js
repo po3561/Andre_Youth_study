@@ -66,7 +66,7 @@ async function updateRankingUI() {
         }
 
         // 상위 15명 표시
-        ranks.slice(0, 15).forEach((item, index) => {
+        ranks.slice(0, 100).forEach((item, index) => {
             const div = document.createElement('div');
             div.className = 'rank-item'; 
             
