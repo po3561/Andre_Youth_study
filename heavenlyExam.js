@@ -141,7 +141,7 @@ function startHeavenlyQuiz(chapter) {
     currentAnswers = []; 
 
     const shuffled = [...chapter.verses].sort(() => Math.random() - 0.5);
-    const count = Math.min(shuffled.length, 13); 
+    const count = Math.min(shuffled.length, 10); 
     const selected = shuffled.slice(0, count);
 
     selected.forEach((vStr, i) => {
