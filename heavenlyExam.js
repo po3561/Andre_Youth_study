@@ -1,187 +1,146 @@
 /**
- * 👑 heavenlyExam.js: 천국고시 최종 통합 엔진 (무결성 검증 완료)
- * 수정 사항: 
- * 1. [Critical Fix] showQuarterMenu 진입 시 하단 바 숨김(false) 강제 적용
- * 2. 챕터 리스트 및 퀴즈 로직 데이터 연동 검증 완료
+ * 👑 heavenlyExam.js: 지능형 구절 병합 및 핵심 구문 추출 엔진 (강화 버전)
+ * 수정 사항: 인접한 빈칸 후보를 최대 4단어까지 결합하여 문맥 중심의 문제 생성
  */
 
-// 🟢 1. 상태 관리 및 캐시
 let heavenlyData = null; 
 const heavenlyCache = {};
 
-/**
- * 📂 메뉴 전환: 메인 -> 분기 선택
- * [Fix] 메인을 벗어나므로 하단 바를 숨기고 상단 버튼을 활성화합니다.
- */
-function showQuarterMenu(highlightId, color) {
-    // 1. 모든 섹션 숨기기
-    if (typeof hideAllSections === 'function') {
-        hideAllSections(); 
-    }
+// 🚫 빈칸 제외 단어 리스트
+const STOP_WORDS = new Set([
+    "또", "및", "곧", "즉", "그러나", "그런데", "그리고", "그러므로", "하지만", "또한", "이에", "이와", "그리하여",
+    "이", "그", "저", "것", "바", "수", "안", "위", "아래", "때", "후", "대하여", "위하여", "인하여", "더불어", "함께", 
+    "가운데", "중에", "앞에", "뒤에", "가라사대", "이르되", "하니", "하더라", "있더라", "하노라", "주기를", "그에게는", 
+    "아니한", "하리라", "있는", "하시는", "행위를", "가진", "주어", "하나님의", "말씀을", "교회의", "주라", "옷", 
+    "내가", "나는", "너와", "보니", "보매", "이르리니", "을", "한", "와", "가", "이", "를", "에"
+]);
 
-    // 2. 분기 선택 메뉴 노출
+function showQuarterMenu(highlightId, color) {
+    if (typeof hideAllSections === 'function') hideAllSections();
     const quarterMenu = document.getElementById('quarter-menu');
     if (quarterMenu) quarterMenu.style.display = 'block';
-    
-    // 🚨 [무결성 수정] 메인이 아니므로 하단 바 숨김 (false)
-    if (typeof updateNavUI === 'function') {
-        updateNavUI(false); 
-    }
-
-    // 💡 3. 특정 분기 강조 로직
+    if (typeof updateNavUI === 'function') updateNavUI(false);
     if (highlightId && color) {
         const targetBtn = document.getElementById(highlightId);
         if (targetBtn) {
             targetBtn.style.backgroundColor = color;
             targetBtn.style.color = "white"; 
-            targetBtn.style.boxShadow = "0 8px 20px rgba(245, 18, 18, 0.15)";
         }
     }
-
     window.scrollTo(0, 0);
 }
 
-/**
- * 📂 데이터 로드 (백엔드 통신)
- */
 async function loadQuarterData(qName) {
     const loadingEl = document.getElementById('loading');
     if(loadingEl) loadingEl.style.display = 'block';
-    
-    // 분기 선택 메뉴 숨김
-    const quarterMenu = document.getElementById('quarter-menu');
-    if (quarterMenu) quarterMenu.style.display = 'none';
-    
     if (heavenlyCache[qName]) {
         heavenlyData = heavenlyCache[qName];
         renderChapterList(qName);
         if(loadingEl) loadingEl.style.display = 'none';
         return; 
     }
-
     try {
         const response = await fetch(`${SERVER_URL}?action=loadQuarter&name=${encodeURIComponent(qName)}`);
         const data = await response.json();
-        
         if (data && data.chapters) {
             heavenlyData = data;
             heavenlyCache[qName] = data;
             renderChapterList(qName);
-        } else {
-            throw new Error("데이터 구조가 올바르지 않습니다.");
         }
-    } catch (e) { 
-        console.error("데이터 로드 실패:", e);
-        alert("데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
-        showQuarterMenu();
-    } finally {
-        if(loadingEl) loadingEl.style.display = 'none';
-    }
+    } catch (e) { console.error("로드 실패", e); }
+    finally { if(loadingEl) loadingEl.style.display = 'none'; }
 }
 
-/**
- * 📂 장 목록 렌더링
- */
 function renderChapterList(qName) {
-    const listArea = document.getElementById('list-area');
     const fileContainer = document.getElementById('file-container');
-    
-    if (!listArea || !fileContainer) return;
-
     if (typeof hideAllSections === 'function') hideAllSections();
-
-    listArea.style.display = 'block';
-    
-    // 서브 페이지이므로 하단 바 숨김
-    if (typeof updateNavUI === 'function') updateNavUI(false);
-    
-    fileContainer.innerHTML = `<h3 style="text-align:center; color:#007AFF; margin-bottom:20px; font-weight:800;">🏆 ${qName} 목록</h3>`;
-
+    document.getElementById('list-area').style.display = 'block';
+    updateNavUI(false);
+    fileContainer.innerHTML = `<h3 style="text-align:center; color:#007AFF; margin-bottom:20px;">🏆 ${qName} 목록</h3>`;
     heavenlyData.chapters.forEach(ch => {
         const card = document.createElement('div');
         card.className = 'glass-card'; 
-        card.style.cssText = "padding: 20px; margin-bottom: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);";
-        
-        card.innerHTML = `
-            <span style="font-weight:700; font-size:16px; color:#1c1c1e;">제 ${ch.name} 시험 보기</span>
-            <span style="color:#C7C7CC; font-weight:600;">〉</span>
-        `;
-        
-        // rank.js의 openNicknamePage 호출
-        card.onclick = () => {
-            if(typeof openNicknamePage === 'function') {
-                openNicknamePage(ch);
-            } else {
-                alert("랭킹 모듈(rank.js)이 로드되지 않았습니다.");
-            }
-        };
+        card.style.cssText = "padding:20px; margin-bottom:12px; cursor:pointer; display:flex; justify-content:space-between; background:white; border-radius:16px;";
+        card.innerHTML = `<span style="font-weight:700; color:#1c1c1e;">제 ${ch.name} 시험 보기</span><span>〉</span>`;
+        card.onclick = () => openNicknamePage(ch);
         fileContainer.appendChild(card);
     });
-    window.scrollTo(0, 0);
 }
 
 /**
- * 📝 퀴즈 엔진
+ * 📝 지능형 퀴즈 엔진: 구절 단위 병합 로직 (강화)
  */
 function startHeavenlyQuiz(chapter) {
-    if (typeof hideAllSections === 'function') hideAllSections();
-    
+    hideAllSections();
     const quizArea = document.getElementById('quiz-area');
-    const quizTitle = document.getElementById('quiz-title');
     const quizText = document.getElementById('quiz-text');
-
-    if (!quizArea) return;
-
     quizArea.style.display = 'block';
-    // 퀴즈 화면에서도 하단 바 숨김
-    if (typeof updateNavUI === 'function') updateNavUI(false);
-    
-    quizTitle.innerText = `계시록 제 ${chapter.name}`;
+    updateNavUI(false);
+    document.getElementById('quiz-title').innerText = `계시록 제 ${chapter.name}`;
     quizText.innerHTML = "";
     currentAnswers = []; 
 
     const shuffled = [...chapter.verses].sort(() => Math.random() - 0.5);
-    const count = Math.min(shuffled.length, 10); 
-    const selected = shuffled.slice(0, count);
+    const selected = shuffled.slice(0, 11);
 
     selected.forEach((vStr, i) => {
         const match = vStr.match(/^\[?(\d+[:：]\d+)\]?\s*(.*)/);
         let ref = match ? match[1] : `구절 ${i+1}`;
-        let text = match ? match[2] : vStr;
+        let text = (match ? match[2] : vStr).replace(/\{|\}/g, "");
 
         const div = document.createElement('div');
         div.className = 'quiz-item';
-        div.style.cssText = "margin-bottom:20px; padding:20px; background:white; border-radius:15px; border-left:5px solid #007AFF; box-shadow: 0 4px 12px rgba(0,0,0,0.05);";
+        div.style.cssText = "margin-bottom:20px; padding:20px; background:white; border-radius:15px; border-left:5px solid #007AFF;";
         
-        const isWhole = Math.random() < 0.4; 
-        let headerHtml = `<div style="font-weight:bold; color:#007AFF; margin-bottom:10px; font-size:0.95rem;">문항 ${i+1} (${ref}절)</div>`;
+        let headerHtml = `<div style="font-weight:900; color:#007AFF; margin-bottom:12px;">문항 ${i+1} (${ref}절)</div>`;
         
-        if (isWhole) {
-            const cleanText = text.replace(/\{|\}/g, "");
-            div.innerHTML = headerHtml + `<textarea class="q-inline-input" data-ans="${cleanText}" style="width:100%; min-height:80px; padding:12px; border:1px solid #E5E5EA; border-radius:10px; background:#F9F9F9; font-size:1rem; color:#333; outline:none; display:block; line-height:1.5; resize:none;" placeholder="구절 전체를 입력하세요"></textarea>`;
-            currentAnswers.push(cleanText);
+        if (Math.random() < 0.4) { // 40% 확률 전체 쓰기
+            currentAnswers.push(text);
+            div.innerHTML = headerHtml + `<textarea class="q-inline-input" data-ref="${ref}절" style="width:100%; min-height:80px; border-bottom:3px solid #007AFF; color:#007AFF; font-weight:bold; padding:10px;" placeholder="구절 전체를 입력하세요 (입력)"></textarea>`;
         } else {
-            const allMatches = [...text.matchAll(/\{(.*?)\}/g)];
-            let candidates = allMatches.filter(m => m[1].length < 8);
+            let words = text.split(' ');
+            let quizHTML = "";
             
-            if (candidates.length === 0 && allMatches.length > 0) {
-                candidates = allMatches.sort((a,b) => a[1].length - b[1].length).slice(0, 1);
+            // 빈칸 후보군 선정 (STOP_WORDS 제외 및 특수기호 제거 후 판단)
+            let isBlankCandidate = words.map(w => {
+                let cleanW = w.replace(/[.,?!]/g, "");
+                return cleanW.length >= 2 && !STOP_WORDS.has(cleanW);
+            });
+            
+            // 🚨 지능형 병합 강화: 인접한 빈칸 후보들을 최대 4단어까지 하나로 합침
+            let chunks = [];
+            for (let j = 0; j < words.length; j++) {
+                if (isBlankCandidate[j]) {
+                    let chunk = words[j];
+                    let startIdx = j;
+                    // 💡 [병합 강화] 다음 단어도 후보면 최대 3~4단어까지 합침
+                    while (j + 1 < words.length && isBlankCandidate[j + 1] && (j - startIdx) < 3) {
+                        chunk += " " + words[++j];
+                    }
+                    chunks.push({ text: chunk, isBlank: true });
+                } else {
+                    chunks.push({ text: words[j], isBlank: false });
+                }
             }
 
-            const targets = candidates.slice(0, 4);
+            // 전체 청크 중 약 25%~30%만 실제로 빈칸 처리하여 가독성 유지
+            let blankChunks = chunks.filter(c => c.isBlank);
+            blankChunks.sort(() => Math.random() - 0.5);
+            let targetCount = Math.ceil(blankChunks.length * 0.28) || 1;
+            let finalTargets = new Set(blankChunks.slice(0, targetCount).map(c => c.text));
 
-            let tempText = text.replace(/\{(.*?)\}/g, (match, p1) => {
-                const isTarget = targets.some(t => t[0] === match);
-                if (isTarget) {
-                    currentAnswers.push(p1);
-                    const width = Math.max(p1.length * 1.2, 3); 
-                    return `<input type="text" class="q-inline-input" data-ans="${p1}" style="width:${width}em; border:none; border-bottom:2px solid #007AFF; background:#F2F7FF; font-weight:bold; color:#d93025; text-align:center; padding:2px 4px; margin:0 4px; outline:none; border-radius:4px;">`;
+            chunks.forEach(chunk => {
+                if (chunk.isBlank && finalTargets.has(chunk.text)) {
+                    currentAnswers.push(chunk.text);
+                    // 글자 수에 비례한 입력창 너비 (최대 18em으로 확장)
+                    const width = Math.min(chunk.text.length * 1.2 + 2, 18);
+                    quizHTML += `<input type="text" class="q-inline-input" data-ref="${ref}절" style="width:${width}em; max-width:98%; border-bottom:3px solid #007AFF; color:#007AFF; font-weight:800; text-align:center; margin: 2px 0;" placeholder="입력"> `;
                 } else {
-                    return `<span style="font-weight:bold; color:#007AFF;">${p1}</span>`;
+                    quizHTML += `<span style="color:#007AFF; font-weight:600; font-size:1.05rem;">${chunk.text}</span> `;
                 }
             });
 
-            div.innerHTML = headerHtml + `<div style="line-height:2.0; font-size:1.05rem; color:#333;">${tempText}</div>`;
+            div.innerHTML = headerHtml + `<div style="line-height:2.4; word-break: keep-all;">${quizHTML}</div>`;
         }
         quizText.appendChild(div);
     });
