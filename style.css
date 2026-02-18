@@ -1,18 +1,18 @@
 /**
  * 👑 style.css
- * 최종 수정: 스크롤바 숨김 + 상단 버튼 대칭 + 텍스트 색상 통일 + 닉네임 중앙 정렬
+ * 최종 수정: 상단 네비게이션 바(제목+버튼)를 하나의 '바' 형태로 시각적 통합
  */
 
 /* [1. 초기화 및 스크롤바 숨김] */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-/* 스크롤바 숨기기 (기능은 유지) */
+/* 스크롤바 숨기기 */
 html, body {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 ::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
 }
 
 :root { 
@@ -21,12 +21,14 @@ html, body {
     --glass-border: 1px solid rgba(255, 255, 255, 0.6);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     --ios-blue: #007AFF;
-    --text-main: #1C1C1E; /* 통일된 텍스트 색상 */
+    --text-main: #1C1C1E;
+    --glass-bg: rgba(255, 255, 255, 0.15);
+    --glass-blur: blur(25px);
 }
 
 html, body { 
     width: 100%; height: 100%; margin: 0; padding: 0; 
-    overflow-x: hidden; /* 가로 흔들림 방지 */
+    overflow-x: hidden; 
 }
 
 body { 
@@ -37,42 +39,15 @@ body {
     -webkit-font-smoothing: antialiased; 
 }
 
-/* 컨테이너: 상단 버튼 공간 확보를 위해 padding-top 증가 */
+/* [컨테이너] 상단 바(60px) 높이만큼 여백 확보 */
 .container { 
     width: 100%; max-width: 500px; margin: 0 auto; 
-    padding: 20px 20px 120px 20px; /* 상단 80px 여백 (버튼 공간) */
+    padding: 85px 20px 120px 20px; 
     display: flex; flex-direction: column; min-height: 100vh;
-    position: relative; }
-.container { max-width: 520px; margin: 0 auto; padding: 24px 16px; display: flex; flex-direction: column; min-height: 100vh; }
-h2 { font-weight: 800; font-size: 26px; letter-spacing: -0.5px; margin: 40px 0 24px; text-align: center; }
-
-/* [원본 유지] 메인 메뉴 버튼 레이아웃 */
-#main-menu { display: flex; flex-direction: column; gap: 20px; width: 100%; margin-top: 10px; }
-#main-menu .category-btn { width: 90%; border-radius: 32px; flex: none; margin: 1em ; text-align: center }
-.category-btn1{
-     background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
-    border: var(--glass-border); box-shadow: var(--glass-shadow); border-radius: 28px;  flex: 1; min-width: 0; cursor: pointer; 
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); text-align: center;
-    display: flex; flex-direction: column; justify-content: center;
-    width:100%; border-radius: 20px; flex: none; margin: 1em 0 ; text-align: center;color: #FF3B30;background-color: rgba(255, 255, 255, 0);}
-.category-btn1 h3 {font-size: 0.8em}
-#main-menu .category-btn h3 { font-size: 24px; margin-bottom: 8px;}
-#main-menu .category-btn p { font-size: 15px; opacity: 0.85; }
-
-/* [style.css 추가] */
-
-/* 랭킹 박스 */
-.ranking-box {
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 15px;
-    margin-bottom: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
->>>>>>> 3364f54d110230f726ab82c68b30af84a263b03d
+    position: relative; 
 }
 
-/* 타이틀 폰트 */
+/* 폰트 공통 */
 h2, h3 { 
     font-weight: 800; color: #ffffff !important; 
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.23);
@@ -82,10 +57,86 @@ h2 { margin: 0 0 20px; font-size: clamp(22px, 6vw, 28px); word-break: keep-all; 
 h3 { font-size: clamp(18px, 5vw, 22px); }
 
 
-/* [2. 메인/분기 메뉴 스타일] */
+/* =========================================================
+   🚨 [핵심 수정] 상단 네비게이션 바 통합 (Visual Grouping)
+   ========================================================= */
+
+/* 1. 상단 바 배경 (제목 포함) - 버튼들을 감싸는 배경 역할 */
+#quiz-title {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 60px;
+    display: flex; align-items: center; justify-content: center;
+    
+    /* 짙은 유리 효과로 상단 바 영역을 확실하게 구분 */
+    background: rgba(30, 40, 70, 0.75); 
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    
+    color: white !important; font-size: 18px; font-weight: 800;
+    z-index: 1400; /* 내용물보다는 위, 팝업보다는 아래 */
+    padding: 0 70px; /* 좌우 버튼이 들어갈 공간 확보 */
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* 2. 왼쪽 [뒤로/홈] 버튼 (상단 바 안에 배치된 느낌) */
+.quiz-nav { 
+    position: fixed !important; 
+    top: 8px !important; left: 10px !important; /* 바 높이(60px) 중앙 정렬: (60-44)/2 = 8 */
+    z-index: 1500; /* 제목 바보다 위에 */
+    
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 44px !important; 
+    padding: 0 16px; margin: 0;
+    
+    /* 버튼 자체 배경은 연하게 하여 상단 바와 어우러지게 */
+    background: rgba(255, 255, 255, 0.15); 
+    border: 1px solid rgba(255,255,255,0.3); 
+    border-radius: 22px; 
+    backdrop-filter: blur(5px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+.nav-btn { 
+    font-size: 15px; font-weight: 700; color: white; 
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2); 
+    white-space: nowrap; 
+}
+
+/* 3. 오른쪽 [+] 버튼 (상단 바 안에 배치된 느낌) */
+.top-plus-btn {
+    position: fixed !important; 
+    top: 8px !important; right: 10px !important; /* 상단 바 높이 중앙 정렬 */
+    z-index: 1500; /* 제목 바보다 위에 */
+    
+    width: 44px !important; height: 44px !important;
+    border-radius: 50%;
+    
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    backdrop-filter: blur(5px);
+    
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+    color: white !important; font-size: 26px; font-weight: 300;
+    padding-bottom: 3px;
+}
+
+
+/* [메인 메뉴 및 랭킹 박스] */
+.ranking-box {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 #main-menu { display: flex; flex-direction: column; gap: 15px; width: 100%; margin-top: 0; }
 #quarter-menu .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
+/* 카테고리 버튼 */
 .category-btn {
     background: rgba(255, 255, 255, 0.25) !important; 
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -98,67 +149,35 @@ h3 { font-size: clamp(18px, 5vw, 22px); }
 .category-btn h3 { margin: 0 0 5px 0; font-size: 18px; }
 .category-btn p { margin: 0; color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600; }
 .category-btn:active { transform: scale(0.96); background: rgba(255,255,255,0.4) !important; }
-.category-btn[style*="background-color"] { border: 2px solid white !important; box-shadow: 0 0 20px rgba(255, 255, 255, 0.6) !important; }
 
-/* 카드 공통 스타일 */
+/* 붉은색 버튼 (예: 카테고리1) */
+.category-btn1 {
+    background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+    border: var(--glass-border); box-shadow: var(--glass-shadow); border-radius: 28px; flex: 1; min-width: 0; cursor: pointer; 
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); text-align: center;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    width:100%; border-radius: 20px; flex: none; margin: 1em 0; text-align: center; color: #FF3B30; background-color: rgba(255, 255, 255, 0);
+}
+.category-btn1 h3 { font-size: 0.8em; }
+
+
+/* [카드 공통 스타일] */
 .menu-card, .quiz-item { 
     background: var(--glass-card-bg) !important; border: var(--glass-border) !important;
     box-shadow: var(--glass-shadow) !important; backdrop-filter: blur(20px);
     border-radius: 20px !important; padding: 20px !important; margin-bottom: 15px !important;
     width: 100%; word-break: keep-all; 
-    
-    /* 🚨 [핵심] 텍스트 색상 강제 통일 (검정) */
     color: var(--text-main) !important; 
 }
 .menu-card div { display: flex; justify-content: space-between; align-items: center; width: 100%; }
 .menu-card span { font-weight: 700; font-size: 16px; color: var(--text-main); }
 
 
-/* 🚨 [3. 상단 버튼 대칭 정렬 (수평 맞춤)] */
-
-/* 왼쪽 홈 버튼 (위치 고정) */
-.quiz-nav { 
-    position: fixed; 
-    top: 15px; left: 20px; /* 오른쪽 + 버튼과 대칭 */
-    z-index: 1500;
-    
-    display: inline-flex; align-items: center; justify-content: center;
-    height: 44px; /* + 버튼과 높이 동일하게 */
-    padding: 0 16px; 
-    
-    background: rgba(255, 255, 255, 0.3); 
-    backdrop-filter: blur(15px); 
-    border: 1px solid rgba(255,255,255,0.5); 
-    border-radius: 22px; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    
-    /* 오답노트 페이지 등에서도 동일하게 적용 */
-    width: auto; margin: 0;
-}
-
-/* 홈 버튼 텍스트 */
-.nav-btn { 
-    font-size: 15px; font-weight: 800; color: white; cursor: pointer; 
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3); 
-    white-space: nowrap; 
-}
-
-/* 오른쪽 + 버튼 (main-ios-style.css와 호환, 위치 미세 조정) */
-.top-plus-btn {
-    top: 15px !important; right: 20px !important; /* 왼쪽 버튼과 대칭 */
-    width: 44px !important; height: 44px !important; /* 크기 통일 */
-}
-
-
-/* [4. 퀴즈 내용] */
+/* [퀴즈 내용] */
 .quiz-item div { 
     line-height: 1.8; 
-    /* 🚨 퀴즈 내부 텍스트 색상 통일 (파란색 섞임 방지) */
     color: var(--text-main) !important;
 }
-
-/* 문제 헤더(문항 1 등)만 구분하고 싶다면 아래 주석 해제. 현재는 통일 요청 반영 */
-/* .quiz-item div:first-child { color: var(--ios-blue) !important; } */
 
 .q-inline-input { 
     border: 1px solid #ccc; border-bottom: 3px solid var(--ios-blue); 
@@ -168,7 +187,8 @@ h3 { font-size: clamp(18px, 5vw, 22px); }
     max-width: 90%; min-width: 40px; box-sizing: border-box;
 }
 
-/* [5. 버튼 스타일] */
+
+/* [하단 버튼 스타일] */
 .submit-btn { 
     width: 100%; padding: 18px; 
     background: linear-gradient(135deg, #00C6FF, #0072FF); 
@@ -192,36 +212,48 @@ h3 { font-size: clamp(18px, 5vw, 22px); }
 }
 
 
-/* [6. 결과 화면 가독성 & 레이아웃] */
+/* [결과 화면 스타일] */
 #result-area { 
     width: 100%; display: none; 
     flex-direction: column; align-items: center; 
-    /* 상단 패딩 불필요 (container 패딩으로 충분) */
 }
 
 .result-header { 
     width: 100%; max-width: 100%; 
-    background: #FFFFFF !important; /* 흰색 배경 */
+    background: #FFFFFF !important; 
     border-radius: 24px; 
-    padding: 25px 15px !important; 
+    padding: 30px 20px !important; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     margin-bottom: 15px; 
     position: relative; overflow: hidden;
-    box-sizing: border-box;margin-top: 60px;text-align: center;color: rgb(0, 0, 0)
+    box-sizing: border-box; 
+    margin-top: 20px; 
+    text-align: center; color: rgb(0, 0, 0);
 }
 .result-header::before {
     content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px;
     background: linear-gradient(90deg, #00C6FF, #0072FF);
 }
 
-/* 🚨 결과 화면 텍스트 색상 강제 (검정) */
+/* 🚨 결과 화면 챕터 뱃지 */
+.result-chapter-badge {
+    display: inline-block;
+    background: #E3F2FD; color: #007AFF;
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 14px; font-weight: 800;
+    margin-bottom: 10px;
+    border: 1px solid #BBDEFB;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
 .result-header h2 {
-    color: var(--text-main) !important; /* 무조건 검정 */
+    color: var(--text-main) !important;
     text-shadow: none !important;
-    opacity: 1;padding-top: 20px
+    opacity: 1; padding-top: 5px;
+    font-size: 22px !important; margin: 5px 0 10px 0;
 }
 .result-header p {
-    color: #888 !important; text-shadow: none !important;color: rgba(0, 0, 0, 0.93)
+    color: #888 !important; text-shadow: none !important; color: rgba(0, 0, 0, 0.93);
 }
 
 #score-text { 
@@ -231,7 +263,6 @@ h3 { font-size: clamp(18px, 5vw, 22px); }
     line-height: 1; margin: 15px 0 15px 0;
     font-size: clamp(60px, 18vw, 90px); white-space: nowrap; 
 }
-
 #score-text::after { 
     content: ''; display: inline-block; 
     width: clamp(30px, 8vw, 45px); height: clamp(30px, 8vw, 45px);
@@ -246,7 +277,8 @@ h3 { font-size: clamp(18px, 5vw, 22px); }
     box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
 }
 
-/* 오답 노트 */
+
+/* [오답 노트] */
 #review-section { width: 100%; box-sizing: border-box; }
 #review-section h3 { margin: 15px 0 10px; font-size: 18px; }
 
@@ -255,12 +287,11 @@ h3 { font-size: clamp(18px, 5vw, 22px); }
     border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     border-radius: 14px; padding: 12px 15px !important; margin-bottom: 8px;
     width: 100%; box-sizing: border-box; overflow-wrap: break-word; 
-    
-    /* 🚨 오답노트 텍스트 검정 통일 */
     color: var(--text-main) !important;
 }
 
-/* 캡쳐 가이드 */
+
+/* [캡쳐 가이드] */
 #capture-guide { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
     background: rgba(40, 50, 80, 0.8); backdrop-filter: blur(15px); 
@@ -271,21 +302,20 @@ h3 { font-size: clamp(18px, 5vw, 22px); }
     background: white; border-radius: 28px; padding: 20px; 
     width: 100%; max-width: 360px; text-align: center; 
     box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
-    display: flex; flex-direction: column; gap: 10px; 
+    display: flex; flex-direction: column; gap: 10px; margin: 0 auto;
 }
 .guide-box h3 { color: #333 !important; text-shadow: none; margin: 0 0 10px 0; font-size: 20px; }
 #captured-img-placeholder img { width: 100%; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid #eee; }
 .guide-box .submit-btn { margin: 0; width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; }
 .guide-box .submit-btn.secondary { background: #E3F2FD; color: #007AFF; }
 
-/* 🚨 [7. 닉네임 팝업 중앙 정렬] */
+
+/* [닉네임 팝업] */
 #nickname-area { 
     display: none; 
-    position: fixed; top: 0; width: 110%; height: 100%; 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
     background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); 
-    z-index: 99999;
-    
-    /* Flex로 화면 정중앙 고정 */
+    z-index: 99999; 
     display: flex; align-items: center; justify-content: center;
 }
 .rpg-card { 
@@ -293,7 +323,6 @@ h3 { font-size: clamp(18px, 5vw, 22px); }
     box-shadow: 0 0 40px rgba(0, 122, 255, 0.5); border-radius: 30px;
     padding: 30px 20px; text-align: center; 
     width: 90%; max-width: 380px; box-sizing: border-box;
-    /* margin 제거 (Flex 중앙 정렬에 맡김) */
     margin: 0;
 }
 .rpg-main-title { color: #fff; font-size: 22px; margin: 0 0 10px; text-shadow: 0 0 10px rgba(0, 122, 255, 0.8); }
@@ -304,7 +333,8 @@ h3 { font-size: clamp(18px, 5vw, 22px); }
 .rpg-btn.primary { background: #007AFF; color: white; }
 .rpg-btn.secondary { background: rgba(255,255,255,0.15); color: #ddd; }
 
-/* 로딩 화면 */
+
+/* [로딩 화면] */
 #loading { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
     background: var(--rpg-sky-gradient);

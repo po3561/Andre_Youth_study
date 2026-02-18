@@ -1,31 +1,37 @@
 /**
  * 👑 rank.js: 닉네임 설정, 랭킹 시스템, 데이터 전송 엔진
- * 최종 수정: 새 URL 적용, undefined 에러 방지, 저장 연결성 강화
+ * 최종 수정: 
+ * 1. [Critical] 한 판당 점수 저장이 단 1번만 수행되도록 '저장 완료 플래그(isScoreSaved)' 추가
+ * 2. 버튼 연타 및 중복 전송 원천 차단
  */
 
-// 🚨 [수정됨] 보내주신 최신 구글 앱스 스크립트 배포 주소
+// 보내주신 최신 구글 앱스 스크립트 배포 주소
 window.RANKING_SERVER_URL = "https://script.google.com/macros/s/AKfycbwZaRN7hi_RZEhLOaK7OuR00DiuGQpLxp0k1_pcvm4ncg3Cwn_5O7kOELmzlqBOmmAoVg/exec";
 
 // 상태 변수
 let userTempNickname = "은둔 통달자";
-let currentChapter = "전체"; // 기본값 설정
-let isSaving = false;
+let currentChapter = "전체";
+let isSaving = false;      // 저장 중인지 확인 (통신 중 중복 클릭 방지)
+let isScoreSaved = false;  // 🚨 [핵심] 이번 판에서 저장이 완료되었는지 확인 (2번 저장 방지)
 
 /**
- * 1. 🚀 닉네임 페이지 오픈 (챕터 정보 저장)
+ * 1. 🚀 닉네임 페이지 오픈
  */
 function openNicknamePage(chapterData) {
     console.log("닉네임 페이지 호출됨, 데이터:", chapterData);
     
-    // [중요] 챕터 데이터가 없으면 방어 코드 실행
+    // 챕터 데이터 초기화
     if (chapterData) {
         currentChapter = chapterData;
     } else {
-        console.warn("챕터 데이터가 누락되었습니다. 기본값 '전체'로 설정합니다.");
         currentChapter = "전체";
     }
 
-    // 모든 섹션 숨기기
+    // 🚨 새 게임 준비: 저장 플래그 초기화 (다시 저장 가능하도록)
+    isScoreSaved = false;
+    isSaving = false;
+
+    // UI 제어: 모든 섹션 숨기기
     if (typeof hideAllSections === 'function') {
         hideAllSections();
     } else {
@@ -35,7 +41,7 @@ function openNicknamePage(chapterData) {
         });
     }
 
-    // 닉네임 입력창 강제 노출
+    // 닉네임 입력창 노출
     const nicknameArea = document.getElementById('nickname-area');
     if (nicknameArea) {
         nicknameArea.style.display = 'flex';
@@ -43,7 +49,7 @@ function openNicknamePage(chapterData) {
         nicknameArea.style.opacity = '1';
     }
 
-    // UI 정리
+    // 네비게이션 정리
     if (typeof updateNavUI === 'function') updateNavUI(false);
     const topPlus = document.getElementById('top-right-plus');
     if(topPlus) topPlus.style.display = 'none';
@@ -95,21 +101,18 @@ async function updateRankingUI() {
 }
 
 /**
- * 3. 🏁 실제 게임 시작 (undefined 에러 방지)
+ * 3. 🏁 실제 게임 시작
  */
 function startGame() {
     document.getElementById('nickname-area').style.display = 'none';
-    isSaving = false; 
+    
+    // 🚨 게임 시작 시에도 플래그 확실하게 초기화
+    isSaving = false;
+    isScoreSaved = false;
 
-    // [중요] currentChapter가 undefined일 경우 안전장치
-    if (!currentChapter) {
-        currentChapter = "전체";
-    }
-
-    console.log("퀴즈 시작 요청, 챕터:", currentChapter);
+    if (!currentChapter) currentChapter = "전체";
 
     if (typeof startHeavenlyQuiz === 'function') {
-        // heavenlyExam.js로 데이터 전달
         startHeavenlyQuiz(currentChapter);
     } else {
         alert("퀴즈 시스템을 불러오지 못했습니다. 새로고침 해주세요.");
@@ -117,13 +120,21 @@ function startGame() {
 }
 
 /**
- * 4. 💾 점수 저장 (강력한 연결성: Form Data 사용)
+ * 4. 💾 점수 저장 (중복 차단 로직 강화)
  */
 async function saveScoreToDB(score) {
+    // 🚨 [핵심] 이미 저장된 판이면 즉시 종료 (중복 저장 원천 차단)
+    if (isScoreSaved) {
+        console.log("🚫 이미 저장된 점수입니다. 중복 저장을 방지합니다.");
+        return;
+    }
+    
+    // 통신 중이면 대기
     if (!window.RANKING_SERVER_URL || isSaving) return; 
-    isSaving = true;
+    
+    isSaving = true; // 통신 시작 잠금
 
-    // 챕터 이름 추출 (객체일 수도 있고 문자열일 수도 있음)
+    // 챕터 이름 처리
     let chapterName = "전체";
     if (currentChapter) {
         if (typeof currentChapter === 'string') {
@@ -135,32 +146,34 @@ async function saveScoreToDB(score) {
         }
     }
 
-    // 🚀 전송 데이터 구성 (URLSearchParams 사용)
     const formData = new URLSearchParams();
     formData.append('action', 'save');
     formData.append('name', userTempNickname);
     formData.append('score', score);
     formData.append('chapter', chapterName);
 
-    console.log("저장 시도:", userTempNickname, score, chapterName);
+    console.log("💾 저장 시도...", userTempNickname, score);
 
     try {
         await fetch(window.RANKING_SERVER_URL, {
             method: 'POST',
-            mode: 'no-cors', // 구글 시트 필수 설정
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: formData
         });
         
         console.log("✅ 점수 전송 완료");
+        
+        // 🚨 [핵심] 저장 성공 처리: 이제 이 판에서는 다시 저장 안 함
+        isScoreSaved = true; 
+        
         setTimeout(updateRankingUI, 1500); 
 
     } catch (e) { 
         console.error("❌ 저장 실패:", e);
+        // 실패했을 경우에만 다시 시도할 수 있게 플래그를 두지 않음 (isScoreSaved = false 유지)
     } finally { 
-        isSaving = false; 
+        isSaving = false; // 통신 잠금 해제
     }
 }
 
@@ -171,9 +184,10 @@ async function autoCaptureAndShare() {
     const scoreText = document.getElementById('score-text')?.innerText || "0";
     const finalScore = parseInt(scoreText.replace(/[^0-9]/g, "")) || 0;
 
-    // 저장 먼저 실행
+    // 1. 점수 저장 실행 (이미 저장했으면 내부에서 알아서 무시함)
     await saveScoreToDB(finalScore);
 
+    // 2. 캡쳐 실행 (저장 여부와 상관없이 캡쳐는 계속 가능)
     const target = document.getElementById('capture-target');
     if (target && typeof html2canvas !== 'undefined') {
         try {
