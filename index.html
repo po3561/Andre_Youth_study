@@ -24,31 +24,27 @@
                     <p class="rpg-sub-title">제사장으로 기록될 이름을 정하십시오.</p>
                 </div>
                 <div class="rpg-input-box">
-
-                    <input type="text" id="user-nickname" placeholder="닉네임 입력 (20자 이하)" maxlength="8">
-
-                    
-
+                    <input type="text" id="user-nickname" placeholder="닉네임 입력 (20자 이하)" maxlength="20">
                     <div class="input-underline"></div>
                 </div>
                 <div class="rpg-actions">
-                    <button class="rpg-btn primary" id="btn-name-start">닉네임으로 시작하기</button>
-                    <button class="rpg-btn secondary" id="btn-anon-start">은둔 고수로 시작</button>
+                    <button class="rpg-btn primary" id="btn-name-start">이름 걸고 시작하기</button>
+                    <button class="rpg-btn secondary" id="btn-anon-start">은둔 통달자로 진행</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <button id="top-right-plus" class="top-plus-btn" onclick="toggleIOSSheet()" style="display:none;">
+    <button id="top-right-plus" class="top-right-btn" onclick="toggleIOSSheet()" style="display:none;">
         <span>+</span>
     </button>
 
     <div class="container">
-        <div id="loading"><div>⏳</div>예비 제사장님 업적 불러오는 중...</div>
+        <div id="loading"><div>⏳</div><span>예비 제사장님 업적 불러오는 중...</span></div>
 
         <div id="main-menu">
             <div class="glass-card dday-card">
-                <div class="dday-text">천국고시 시험 까지<span id="dday-count" class="dday-highlight">D-Day</span></div>
+                <div class="dday-text">천국고시 통달까지 <span id="dday-count" class="dday-highlight">D-Day</span></div>
                 <div class="dday-bar-bg">
                     <div id="dday-bar" class="dday-bar-fill"></div>
                 </div>
@@ -63,9 +59,12 @@
         </div>
 
         <div id="quarter-menu" style="display:none;">
-            <div class="back-btn" onclick="showMain()">〈 뒤로</div>
-            <h2>분기 선택</h2>
-            <div class="grid-menu">
+            <div class="nav-bar-bg">도전 분기 선택</div>
+            <div class="quiz-nav-left" onclick="showMain()">
+                <span class="nav-btn">〈 홈으로</span>
+            </div>
+            
+            <div class="grid-menu" style="margin-top: 10px;">
                 <div class="category-btn" onclick="loadQuarterData('1분기')"><h3>1분기</h3><p>1-6장</p></div>
                 <div class="category-btn" onclick="loadQuarterData('2분기')"><h3>2분기</h3><p>7-12장</p></div>
                 <div class="category-btn" onclick="loadQuarterData('3분기')"><h3>3분기</h3><p>13-17장</p></div>
@@ -74,19 +73,33 @@
         </div>
 
         <div id="list-area" style="display:none;">
-            <div class="back-btn" onclick="showQuarterMenu()">〈 뒤로</div>
-            <div id="file-container"></div>
+            <div class="nav-bar-bg">시험 선택</div>
+            <div class="quiz-nav-left" onclick="showQuarterMenu()">
+                <span class="nav-btn">〈 뒤로</span>
+            </div>
+            <div id="file-container" style="margin-top: 10px;"></div>
         </div>
 
         <div id="quiz-area" style="display:none;">
-            <div id="quiz-title"></div>
+            
+            <div id="quiz-title">통달 시험</div> 
+            
+            <div class="quiz-nav-left" onclick="if(confirm('시험을 중단하시겠습니까?')) showQuarterMenu()">
+                <span class="nav-btn">〈 뒤로</span>
+            </div>
+            
+            <button class="top-right-btn" onclick="resetAllQuiz()">
+                <span style="font-size: 24px; font-weight: 700;">↻</span>
+            </button>
+
             <div id="quiz-text"></div>
+            
             <button class="submit-btn" onclick="submitQuiz()">시험지 제출</button>
         </div>
 
         <div id="result-area" style="display:none;">
-            <div class="quiz-nav" style="justify-content: flex-start; margin-bottom: 5px;">
-                <div class="nav-btn" onclick="showMain()">〈 홈으로</div>
+            <div class="quiz-nav-left" style="top: 15px;" onclick="showMain()">
+                <span class="nav-btn">〈 홈으로</span>
             </div>
 
             <div id="capture-target" class="result-header">
@@ -100,7 +113,7 @@
             </div>
 
             <div id="review-section" style="width: 100%;">
-                <h3 style="text-align: center; margin-bottom: 10px; font-size: 1.1rem;">오답확인</h3>
+                <h3 style="text-align: center; margin-bottom: 10px; font-size: 1.1rem;">📝 통달 확인 (오답 노트)</h3>
                 <div id="review-list"></div>
             </div>
         </div>
@@ -116,9 +129,9 @@
     </div>
 
     <div id="bottom-action-bar" class="bottom-nav-bar glass-nav">
-        <button class="fab-plus" onclick="toggleIOSSheet()"><span>+</span></button>
+        <button class="fab-plus" onclick="toggleIOSSheet()" style="display:none;"><span>+</span></button>
         <button class="main-pill-btn" onclick="showQuarterMenu()">
-            👑 암기시험응시
+            👑 천국고시 암기 시험 바로가기
         </button>
     </div>
 
@@ -126,9 +139,9 @@
         <div class="ios-sheet" onclick="event.stopPropagation()">
             <div class="sheet-handle"></div>
             <div class="sheet-content">
-                <h3>메뉴</h3>
+                <h3>통달 도우미 메뉴</h3>
                 <div class="sheet-menu-list">
-                    <div class="sheet-item" onclick="goToChallengeGroup()">🚀 업데이트 예정</div>
+                    <div class="sheet-item" onclick="goToChallengeGroup()">🚀 커뮤니티</div>
                     <div class="sheet-item close" onclick="toggleIOSSheet()">닫기</div>
                 </div>
             </div>
@@ -136,20 +149,16 @@
     </div>
 
     <script src="common.js"></script>
-    
     <script src="rank.js"></script>
     <script src="heavenlyExam.js"></script>
     <script src="weeklyExam.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. 목표 날짜 설정 (2026년 3월 28일)
             const targetDate = new Date('2026-03-28T00:00:00');
-            // 2. 시작 날짜 설정 (진행률 계산용, 예: 2026년 1월 1일)
-            const startDate = new Date('2026-02-01T00:00:00');
+            const startDate = new Date('2026-01-01T00:00:00');
             const today = new Date();
 
-            // D-Day 텍스트 계산
             const diffTime = targetDate - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
@@ -160,21 +169,15 @@
                 else ddayText.innerText = "D+" + Math.abs(diffDays);
             }
 
-            // 게이지 바 퍼센트 계산
             const totalDuration = targetDate - startDate;
             const elapsedDuration = today - startDate;
             let percentage = (elapsedDuration / totalDuration) * 100;
-            
-            // 0% ~ 100% 사이로 제한
             if (percentage < 0) percentage = 0;
             if (percentage > 100) percentage = 100;
 
-            // 바 너비 적용 (애니메이션 효과를 위해 약간의 지연)
             setTimeout(() => {
                 const ddayBar = document.getElementById('dday-bar');
-                if (ddayBar) {
-                    ddayBar.style.width = percentage + "%";
-                }
+                if (ddayBar) ddayBar.style.width = percentage + "%";
             }, 500);
         });
     </script>
