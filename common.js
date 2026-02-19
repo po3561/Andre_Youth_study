@@ -5,7 +5,7 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const SERVER_URL = "https://script.google.com/macros/s/AKfycbw238LQiorJpRUX_okKLvyH6EB65GSgq0D9kfiJNpWiUd35LZG_9o5sEbh0ZdJRC9TA/exec";
+const SERVER_URL = "https://script.google.com/macros/s/AKfycbxfsNxtCL1ZH85l7ltm0M4e4uvGOJVDZTiK0UEzfYmdcMlOP2sZWFn9cmkyn92v_q7K/exec";
 const GROUP_LINK = "https://t.me/+akm0mVey8WQ4OTBl"; 
 
 let allData = []; 

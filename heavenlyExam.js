@@ -1,6 +1,6 @@
 /**
- * 👑 heavenlyExam.js: 지능형 구절 병합 및 핵심 구문 추출 엔진 (강화 버전)
- * 수정 사항: 인접한 빈칸 후보를 최대 4단어까지 결합하여 문맥 중심의 문제 생성
+ * 👑 heavenlyExam.js: 지능형 구절 병합 및 핵심 구문 추출 엔진 (라이브 크롤링 통합 버전)
+ * 수정 사항: 기존 파일 로드 방식을 완전히 대체하고, 원본 사이트 실시간 파싱 및 캐싱 적용
  */
 
 let heavenlyData = null; 
@@ -14,6 +14,14 @@ const STOP_WORDS = new Set([
     "아니한", "하리라", "있는", "하시는", "행위를", "가진", "주어", "하나님의", "말씀을", "교회의", "주라", "옷", 
     "내가", "나는", "너와", "보니", "보매", "이르리니", "을", "한", "와", "가", "이", "를", "에"
 ]);
+
+// 🌟 [신규] 각 분기별 계시록 장 매핑 (드라이브 우회용)
+const QUARTERS_MAP = {
+    "1분기": [1, 2, 3, 4, 5, 6],
+    "2분기": [7, 8, 9, 10, 11, 12],
+    "3분기": [13, 14, 15, 16, 17],
+    "4분기": [18, 19, 20, 21, 22]
+};
 
 function showQuarterMenu(highlightId, color) {
     if (typeof hideAllSections === 'function') hideAllSections();
@@ -30,61 +38,104 @@ function showQuarterMenu(highlightId, color) {
     window.scrollTo(0, 0);
 }
 
+// 🌟 [신규] 분기 데이터를 드라이브에서 찾지 않고, 매핑된 정보를 즉각 로드
 async function loadQuarterData(qName) {
     const loadingEl = document.getElementById('loading');
     if(loadingEl) loadingEl.style.display = 'block';
-    if (heavenlyCache[qName]) {
-        heavenlyData = heavenlyCache[qName];
+
+    if (QUARTERS_MAP[qName]) {
+        const chapters = QUARTERS_MAP[qName].map(num => ({
+            name: num + "장",
+            number: num,
+            isLive: true // 실시간 크롤링 대상임을 명시
+        }));
+        heavenlyData = { chapters: chapters };
         renderChapterList(qName);
-        if(loadingEl) loadingEl.style.display = 'none';
-        return; 
+    } else {
+        alert("해당 분기 데이터를 찾을 수 없습니다.");
     }
-    try {
-        const response = await fetch(`${SERVER_URL}?action=loadQuarter&name=${encodeURIComponent(qName)}`);
-        const data = await response.json();
-        if (data && data.chapters) {
-            heavenlyData = data;
-            heavenlyCache[qName] = data;
-            renderChapterList(qName);
-        }
-    } catch (e) { console.error("로드 실패", e); }
-    finally { if(loadingEl) loadingEl.style.display = 'none'; }
+
+    if(loadingEl) loadingEl.style.display = 'none';
 }
 
 function renderChapterList(qName) {
     const fileContainer = document.getElementById('file-container');
     if (typeof hideAllSections === 'function') hideAllSections();
     document.getElementById('list-area').style.display = 'block';
-    updateNavUI(false);
+    if (typeof updateNavUI === 'function') updateNavUI(false);
+    
     fileContainer.innerHTML = `<h3 style="text-align:center; color:#007AFF; margin-bottom:20px;">🏆 ${qName} 목록</h3>`;
     heavenlyData.chapters.forEach(ch => {
         const card = document.createElement('div');
         card.className = 'glass-card'; 
         card.style.cssText = "padding:20px; margin-bottom:12px; cursor:pointer; display:flex; justify-content:space-between; background:white; border-radius:16px;";
         card.innerHTML = `<span style="font-weight:700; color:#1c1c1e;">제 ${ch.name} 시험 보기</span><span>〉</span>`;
-        card.onclick = () => openNicknamePage(ch);
+        card.onclick = () => {
+            if (typeof openNicknamePage === 'function') {
+                openNicknamePage(ch);
+            } else {
+                startHeavenlyQuiz(ch);
+            }
+        };
         fileContainer.appendChild(card);
     });
 }
 
 /**
- * 📝 지능형 퀴즈 엔진: 구절 단위 병합 로직 (강화)
+ * 📝 지능형 퀴즈 엔진: 구절 단위 병합 로직 및 라이브 데이터 패치 융합
  */
-function startHeavenlyQuiz(chapter) {
-    hideAllSections();
+async function startHeavenlyQuiz(chapter) {
+    if (typeof hideAllSections === 'function') hideAllSections();
     const quizArea = document.getElementById('quiz-area');
     const quizText = document.getElementById('quiz-text');
+    const loadingEl = document.getElementById('loading');
+    
+    quizArea.style.display = 'none';
+    if (loadingEl) loadingEl.style.display = 'block';
+
+    let versesToQuiz = [];
+
+    // 🌟 [신규] 퀴즈 시작 직전, 원본 사이트에서 데이터를 즉석으로 당겨옴
+    if (chapter.isLive) {
+        try {
+            // 통신 피로도를 줄이기 위한 초고속 캐싱
+            if (heavenlyCache[`live_${chapter.number}`]) {
+                versesToQuiz = heavenlyCache[`live_${chapter.number}`];
+            } else {
+                const response = await fetch(`${SERVER_URL}?action=fetchLiveBible&chapter=${chapter.number}`);
+                const data = await response.json();
+                
+                if (data && data.verses && data.verses.length > 0) {
+                    versesToQuiz = data.verses;
+                    heavenlyCache[`live_${chapter.number}`] = versesToQuiz; 
+                } else {
+                    throw new Error("파싱 데이터 없음");
+                }
+            }
+        } catch(e) {
+            console.error("실시간 데이터 로드 실패:", e);
+            alert("원본 사이트에서 구절을 가져오는 데 실패했습니다. 잠시 후 다시 시도해주세요.");
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (typeof showQuarterMenu === 'function') showQuarterMenu();
+            return;
+        }
+    } else {
+        versesToQuiz = chapter.verses || [];
+    }
+
+    if (loadingEl) loadingEl.style.display = 'none';
     quizArea.style.display = 'block';
-    updateNavUI(false);
+    if (typeof updateNavUI === 'function') updateNavUI(false);
+    
     document.getElementById('quiz-title').innerText = `계시록 제 ${chapter.name}`;
     quizText.innerHTML = "";
     currentAnswers = []; 
 
-    const shuffled = [...chapter.verses].sort(() => Math.random() - 0.5);
+    const shuffled = [...versesToQuiz].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, 11);
 
     selected.forEach((vStr, i) => {
-        const match = vStr.match(/^\[?(\d+[:：]\d+)\]?\s*(.*)/);
+        const match = vStr.match(/^\[?(\d+[:：]?\d*)\]?\s*(.*)/);
         let ref = match ? match[1] : `구절 ${i+1}`;
         let text = (match ? match[2] : vStr).replace(/\{|\}/g, "");
 
@@ -107,13 +158,12 @@ function startHeavenlyQuiz(chapter) {
                 return cleanW.length >= 2 && !STOP_WORDS.has(cleanW);
             });
             
-            // 🚨 지능형 병합 강화: 인접한 빈칸 후보들을 최대 4단어까지 하나로 합침
+            // 지능형 병합: 인접한 빈칸 후보들을 최대 4단어까지 하나로 합침
             let chunks = [];
             for (let j = 0; j < words.length; j++) {
                 if (isBlankCandidate[j]) {
                     let chunk = words[j];
                     let startIdx = j;
-                    // 💡 [병합 강화] 다음 단어도 후보면 최대 3~4단어까지 합침
                     while (j + 1 < words.length && isBlankCandidate[j + 1] && (j - startIdx) < 3) {
                         chunk += " " + words[++j];
                     }
