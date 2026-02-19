@@ -1,10 +1,14 @@
 /**
- * 👑 heavenlyExam.js: 지능형 구절 병합 및 핵심 구문 추출 엔진 (라이브 크롤링 통합 버전)
- * 수정 사항: 기존 파일 로드 방식을 완전히 대체하고, 원본 사이트 실시간 파싱 및 캐싱 적용
+ * 👑 heavenlyExam.js: 지능형 구절 병합 및 핵심 구문 추출 엔진
+ * 업데이트: 괄호(빈칸) 연속 출현 원천 차단 로직(Anti-adjacency) 적용 및 인덱스 기반 정밀 채점
  */
 
 let heavenlyData = null; 
 const heavenlyCache = {};
+
+// 🚨 다시 섞기, 힌트 보기를 위한 현재 시험 데이터 임시 저장소
+let currentQuizChapterData = null;
+let currentFullVerses = [];
 
 // 🚫 빈칸 제외 단어 리스트
 const STOP_WORDS = new Set([
@@ -14,14 +18,6 @@ const STOP_WORDS = new Set([
     "아니한", "하리라", "있는", "하시는", "행위를", "가진", "주어", "하나님의", "말씀을", "교회의", "주라", "옷", 
     "내가", "나는", "너와", "보니", "보매", "이르리니", "을", "한", "와", "가", "이", "를", "에"
 ]);
-
-// 🌟 [신규] 각 분기별 계시록 장 매핑 (드라이브 우회용)
-const QUARTERS_MAP = {
-    "1분기": [1, 2, 3, 4, 5, 6],
-    "2분기": [7, 8, 9, 10, 11, 12],
-    "3분기": [13, 14, 15, 16, 17],
-    "4분기": [18, 19, 20, 21, 22]
-};
 
 function showQuarterMenu(highlightId, color) {
     if (typeof hideAllSections === 'function') hideAllSections();
@@ -38,24 +34,31 @@ function showQuarterMenu(highlightId, color) {
     window.scrollTo(0, 0);
 }
 
-// 🌟 [신규] 분기 데이터를 드라이브에서 찾지 않고, 매핑된 정보를 즉각 로드
+// 🌟 과장님의 완벽한 원본 통신 로직 그대로 적용
 async function loadQuarterData(qName) {
     const loadingEl = document.getElementById('loading');
     if(loadingEl) loadingEl.style.display = 'block';
-
-    if (QUARTERS_MAP[qName]) {
-        const chapters = QUARTERS_MAP[qName].map(num => ({
-            name: num + "장",
-            number: num,
-            isLive: true // 실시간 크롤링 대상임을 명시
-        }));
-        heavenlyData = { chapters: chapters };
+    
+    if (heavenlyCache[qName]) {
+        heavenlyData = heavenlyCache[qName];
         renderChapterList(qName);
-    } else {
-        alert("해당 분기 데이터를 찾을 수 없습니다.");
+        if(loadingEl) loadingEl.style.display = 'none';
+        return; 
     }
-
-    if(loadingEl) loadingEl.style.display = 'none';
+    try {
+        const response = await fetch(`${SERVER_URL}?action=loadQuarter&name=${encodeURIComponent(qName)}`);
+        const data = await response.json();
+        if (data && data.chapters) {
+            heavenlyData = data;
+            heavenlyCache[qName] = data;
+            renderChapterList(qName);
+        }
+    } catch (e) { 
+        console.error("데이터 로드 실패:", e); 
+        alert("데이터를 불러오는 데 실패했습니다. 통신 상태를 확인해주세요.");
+    } finally { 
+        if(loadingEl) loadingEl.style.display = 'none'; 
+    }
 }
 
 function renderChapterList(qName) {
@@ -81,61 +84,45 @@ function renderChapterList(qName) {
     });
 }
 
+// 🚨 전체 다시 섞기 기능 (+메뉴 연동용)
+function shuffleCurrentQuiz() {
+    if(confirm("문제를 전체 다시 섞고 초기화 하시겠습니까?")) {
+        if (typeof toggleIOSSheet === 'function') toggleIOSSheet(); // 메뉴창 닫기
+        if (currentQuizChapterData) startHeavenlyQuiz(currentQuizChapterData); 
+    }
+}
+
 /**
- * 📝 지능형 퀴즈 엔진: 구절 단위 병합 로직 및 라이브 데이터 패치 융합
+ * 📝 지능형 퀴즈 엔진 (빈칸 연속 방지 로직 적용)
  */
-async function startHeavenlyQuiz(chapter) {
+function startHeavenlyQuiz(chapter) {
     if (typeof hideAllSections === 'function') hideAllSections();
     const quizArea = document.getElementById('quiz-area');
     const quizText = document.getElementById('quiz-text');
-    const loadingEl = document.getElementById('loading');
     
-    quizArea.style.display = 'none';
-    if (loadingEl) loadingEl.style.display = 'block';
-
-    let versesToQuiz = [];
-
-    // 🌟 [신규] 퀴즈 시작 직전, 원본 사이트에서 데이터를 즉석으로 당겨옴
-    if (chapter.isLive) {
-        try {
-            // 통신 피로도를 줄이기 위한 초고속 캐싱
-            if (heavenlyCache[`live_${chapter.number}`]) {
-                versesToQuiz = heavenlyCache[`live_${chapter.number}`];
-            } else {
-                const response = await fetch(`${SERVER_URL}?action=fetchLiveBible&chapter=${chapter.number}`);
-                const data = await response.json();
-                
-                if (data && data.verses && data.verses.length > 0) {
-                    versesToQuiz = data.verses;
-                    heavenlyCache[`live_${chapter.number}`] = versesToQuiz; 
-                } else {
-                    throw new Error("파싱 데이터 없음");
-                }
-            }
-        } catch(e) {
-            console.error("실시간 데이터 로드 실패:", e);
-            alert("원본 사이트에서 구절을 가져오는 데 실패했습니다. 잠시 후 다시 시도해주세요.");
-            if (loadingEl) loadingEl.style.display = 'none';
-            if (typeof showQuarterMenu === 'function') showQuarterMenu();
-            return;
-        }
-    } else {
-        versesToQuiz = chapter.verses || [];
-    }
-
-    if (loadingEl) loadingEl.style.display = 'none';
     quizArea.style.display = 'block';
     if (typeof updateNavUI === 'function') updateNavUI(false);
-    
     document.getElementById('quiz-title').innerText = `계시록 제 ${chapter.name}`;
     quizText.innerHTML = "";
     currentAnswers = []; 
 
-    const shuffled = [...versesToQuiz].sort(() => Math.random() - 0.5);
+    // 현재 챕터 데이터 보존
+    currentQuizChapterData = chapter;
+    currentFullVerses = [...chapter.verses];
+    
+    // 전체 힌트(말씀 보기) 데이터 세팅
+    const hintContent = document.getElementById('hint-content');
+    if(hintContent) {
+        hintContent.innerHTML = currentFullVerses.map(v => `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">${v}</div>`).join('');
+        const hintTitle = document.getElementById('hint-chapter-title');
+        if (hintTitle) hintTitle.innerText = `📖 계시록 제 ${chapter.name}`;
+    }
+
+    const shuffled = [...chapter.verses].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, 11);
 
     selected.forEach((vStr, i) => {
-        const match = vStr.match(/^\[?(\d+[:：]?\d*)\]?\s*(.*)/);
+        const match = vStr.match(/^\[?(\d+[:：]\d+)\]?\s*(.*)/);
         let ref = match ? match[1] : `구절 ${i+1}`;
         let text = (match ? match[2] : vStr).replace(/\{|\}/g, "");
 
@@ -143,22 +130,28 @@ async function startHeavenlyQuiz(chapter) {
         div.className = 'quiz-item';
         div.style.cssText = "margin-bottom:20px; padding:20px; background:white; border-radius:15px; border-left:5px solid #007AFF;";
         
-        let headerHtml = `<div style="font-weight:900; color:#007AFF; margin-bottom:12px;">문항 ${i+1} (${ref}절)</div>`;
+        let safeText = encodeURIComponent(text);
+        let headerHtml = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:1px dashed rgba(0,122,255,0.2);">
+                <div style="font-weight:900; color:#007AFF; font-size: 1.1rem;">문항 ${i+1} <span style="font-size:0.9rem; color:#888;">(${ref}절)</span></div>
+                <button onclick="showItemHint('${safeText}')" style="background:rgba(0,122,255,0.08); border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; box-shadow:0 2px 8px rgba(0,0,0,0.05); transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+                    💡
+                </button>
+            </div>
+        `;
         
-        if (Math.random() < 0.4) { // 40% 확률 전체 쓰기
+        if (Math.random() < 0.7) { 
             currentAnswers.push(text);
-            div.innerHTML = headerHtml + `<textarea class="q-inline-input" data-ref="${ref}절" style="width:100%; min-height:80px; border-bottom:3px solid #007AFF; color:#007AFF; font-weight:bold; padding:10px;" placeholder="구절 전체를 입력하세요 (입력)"></textarea>`;
+            div.innerHTML = headerHtml + `<textarea class="q-inline-input" data-ref="${ref}절" data-ans="${text}" style="width:100%; min-height:80px; border-bottom:3px solid #007AFF; color:var(--ios-blue); font-weight:bold; padding:10px;" placeholder="구절 전체를 입력하세요"></textarea>`;
         } else {
             let words = text.split(' ');
             let quizHTML = "";
             
-            // 빈칸 후보군 선정 (STOP_WORDS 제외 및 특수기호 제거 후 판단)
             let isBlankCandidate = words.map(w => {
                 let cleanW = w.replace(/[.,?!]/g, "");
                 return cleanW.length >= 2 && !STOP_WORDS.has(cleanW);
             });
             
-            // 지능형 병합: 인접한 빈칸 후보들을 최대 4단어까지 하나로 합침
             let chunks = [];
             for (let j = 0; j < words.length; j++) {
                 if (isBlankCandidate[j]) {
@@ -173,18 +166,28 @@ async function startHeavenlyQuiz(chapter) {
                 }
             }
 
-            // 전체 청크 중 약 25%~30%만 실제로 빈칸 처리하여 가독성 유지
-            let blankChunks = chunks.filter(c => c.isBlank);
-            blankChunks.sort(() => Math.random() - 0.5);
-            let targetCount = Math.ceil(blankChunks.length * 0.28) || 1;
-            let finalTargets = new Set(blankChunks.slice(0, targetCount).map(c => c.text));
+            // 💡 [핵심] 괄호 연속 출현 방지 알고리즘 적용
+            // 각 덩어리에 고유 인덱스를 부여하여 앞뒤로 인접한 빈칸이 생기지 않도록 차단
+            let blankEligible = chunks.map((c, index) => ({ ...c, index })).filter(c => c.isBlank);
+            blankEligible.sort(() => Math.random() - 0.5); // 랜덤 셔플
+            
+            let targetCount = Math.ceil(blankEligible.length * 0.28) || 1;
+            let selectedIndices = new Set();
 
-            chunks.forEach(chunk => {
-                if (chunk.isBlank && finalTargets.has(chunk.text)) {
+            for (let candidate of blankEligible) {
+                if (selectedIndices.size >= targetCount) break;
+                // 이전 덩어리나 다음 덩어리가 이미 빈칸으로 선택되지 않았을 때만 승인!
+                if (!selectedIndices.has(candidate.index - 1) && !selectedIndices.has(candidate.index + 1)) {
+                    selectedIndices.add(candidate.index);
+                }
+            }
+
+            // 선택된 인덱스를 바탕으로 HTML 렌더링
+            chunks.forEach((chunk, index) => {
+                if (selectedIndices.has(index)) {
                     currentAnswers.push(chunk.text);
-                    // 글자 수에 비례한 입력창 너비 (최대 18em으로 확장)
                     const width = Math.min(chunk.text.length * 1.2 + 2, 18);
-                    quizHTML += `<input type="text" class="q-inline-input" data-ref="${ref}절" style="width:${width}em; max-width:98%; border-bottom:3px solid #007AFF; color:#007AFF; font-weight:800; text-align:center; margin: 2px 0;" placeholder="입력"> `;
+                    quizHTML += `<input type="text" class="q-inline-input" data-ref="${ref}절" data-ans="${chunk.text}" style="width:${width}em; max-width:98%; border-bottom:3px solid #007AFF; color:var(--ios-blue); font-weight:800; text-align:center; margin: 2px 0;" placeholder="입력"> `;
                 } else {
                     quizHTML += `<span style="color:#007AFF; font-weight:600; font-size:1.05rem;">${chunk.text}</span> `;
                 }
@@ -194,5 +197,64 @@ async function startHeavenlyQuiz(chapter) {
         }
         quizText.appendChild(div);
     });
+
+    // 실시간 검사 이벤트 부착
+    setTimeout(() => {
+        const inputs = document.querySelectorAll('.q-inline-input');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (typeof checkInputRealtime === 'function') {
+                    checkInputRealtime(this);
+                }
+            });
+        });
+    }, 100);
+
     window.scrollTo(0,0);
+}
+
+// =========================================================
+// 💡 개별 문항 힌트 팝업 엔진
+// =========================================================
+function showItemHint(encodedText) {
+    const text = decodeURIComponent(encodedText);
+    let modal = document.getElementById('item-hint-overlay');
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'item-hint-overlay';
+        modal.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:99999; display:none; align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity 0.3s ease;";
+        modal.onclick = closeItemHint;
+        
+        const box = document.createElement('div');
+        box.style.cssText = "background:rgba(255,255,255,0.95); padding:30px 20px; border-radius:24px; box-shadow:0 15px 35px rgba(0,0,0,0.2); text-align:center; width:100%; max-width:340px; transform:scale(0.9); transition:transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border:1px solid rgba(255,255,255,0.6);";
+        box.onclick = (e) => e.stopPropagation(); 
+        
+        box.innerHTML = `
+            <div style="font-size:36px; margin-bottom:10px;">💡</div>
+            <h3 style="color:#007AFF; margin:0 0 15px 0; font-size:19px; font-weight:800; text-shadow:none;">문항 정답 힌트</h3>
+            <div id="item-hint-text" style="font-size:16px; color:#1c1c1e; line-height:1.6; font-weight:600; word-break:keep-all; margin-bottom:24px; padding:15px; background:rgba(0,122,255,0.05); border-radius:12px; border:1px solid rgba(0,122,255,0.1);"></div>
+            <button onclick="closeItemHint()" style="width:100%; padding:14px; background:linear-gradient(135deg, #00C6FF, #0072FF); color:white; border:none; border-radius:14px; font-size:16px; font-weight:800; cursor:pointer; box-shadow:0 4px 15px rgba(0,114,255,0.3);">확인</button>
+        `;
+        
+        modal.appendChild(box);
+        document.body.appendChild(modal);
+    }
+    
+    document.getElementById('item-hint-text').innerText = text;
+    modal.style.display = 'flex';
+    
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('div').style.transform = 'scale(1)';
+    }, 10);
+}
+
+function closeItemHint() {
+    const modal = document.getElementById('item-hint-overlay');
+    if (modal) {
+        modal.style.opacity = '0';
+        modal.querySelector('div').style.transform = 'scale(0.9)';
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
+    }
 }

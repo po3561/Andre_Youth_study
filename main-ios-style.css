@@ -1,6 +1,6 @@
 /**
  * 👑 main-ios-style.css
- * 수정 사항: 메인 화면 상단 여백 최소화 + 하단 FAB(+) 버튼 강제 활성화
+ * 업데이트: 디데이바 겹침 해결 및 시인성 강화, 천국고시 랭킹 웅장한 명예의 전당 디자인 적용
  */
 
 :root {
@@ -35,19 +35,20 @@ body.main-body-theme {
 
 /* 구름 오버레이 */
 body.main-body-theme::before {
-    content: '';
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: 
         radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15), transparent 40%),
         radial-gradient(circle at 80% 10%, rgba(255,255,255,0.1), transparent 30%);
     pointer-events: none; z-index: -1;
 }
 
-/* 🚨 [핵심 수정 1] 메인 컨테이너 여백 대폭 축소 */
+/* =======================================================
+   🚨 [겹침 해결] 메인 컨테이너 여백 최적화
+   ======================================================= */
 #main-menu {
-    /* 기존 30px에서 0으로 줄이고, 마진을 음수로 주어 더 위로 끌어올림 */
-    padding-top: 0 !important;
-    margin-top: -30px !important; 
+    /* 상단에 고정된 디데이 바의 높이만큼 여유 공간을 주어 랭킹이 가려지지 않게 함 */
+    padding-top: 1.8em !important; 
+    margin-top: 0 !important; 
     padding-bottom: 120px; /* 하단 바 공간 확보 */
     width: 100%;
 }
@@ -62,75 +63,114 @@ body.main-body-theme::before {
     position: relative; overflow: hidden;
 }
 
-/* ================= D-Day 카드 ================= */
+/* =======================================================
+   🚨 [시인성 강화] 상단 고정 D-Day 카드
+   ======================================================= */
 .dday-card {
-    background: rgba(20, 30, 60, 0.4) !important;
-    border: 1px solid rgba(130, 200, 255, 0.5) !important;
+    position: fixed !important; top: 15px !important; left: 50% !important; transform: translateX(-50%) !important;
+    width: calc(100% - 40px) !important; max-width: 460px !important;
+    z-index: 1300 !important;
+    
+    /* 글자가 잘 보이도록 어두운 유리 베이스 적용 */
+    background: rgba(15, 25, 45, 0.8) !important; 
+    backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1) !important;
 }
 .dday-text {
-    font-size: 17px; font-weight: 700; margin-bottom: 10px;
+    font-size: 18px; font-weight: 800; margin-bottom: 12px;
     display: flex; justify-content: space-between; align-items: center;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    color: #ffffff !important; /* 어두운 배경 대비 완벽한 흰색 */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 .dday-highlight {
-    color: #FFD56B; font-size: 20px; font-weight: 800;
-    text-shadow: 0 0 15px rgba(255, 213, 107, 0.8);
+    color: #FFD700 !important; font-size: 25px !important; font-weight: 900 !important;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6) !important; letter-spacing: -1px;
 }
 .dday-bar-bg {
-    height: 10px; background: rgba(0, 0, 0, 0.3);
+    height: 10px; background: rgba(0, 0, 0, 0.4);
     border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
 }
 .dday-bar-fill {
-    width: 0%; height: 100%; /* JS로 채움 */
+    width: 0%; height: 100%; 
     background: linear-gradient(90deg, #00C6FF, #ff9a00);
     box-shadow: 0 0 15px rgba(0, 198, 255, 0.6); border-radius: 5px;
     transition: width 1s ease-out;
 }
 
-/* ================= 랭킹 리스트 ================= */
-.ranking-container { margin-top: 10px; }
+/* =======================================================
+   🚨 [웅장함 추가] 천국고시 랭킹 (명예의 전당) 스타일
+   ======================================================= */
+.ranking-container { margin-top: 10px; position: relative; }
 
-.main-section-title {
-    font-size: 1.4em; font-weight: 800;
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.44);
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
-    border: var(--glass-border); border-radius: 24px;
-    padding: 15px; margin-bottom: 16px;
-    box-shadow: var(--glass-shadow);
-    text-align: center;
+/* 랭킹 컨테이너 뒤 은은한 황금빛 후광 */
+.ranking-container::before {
+    content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px;
+    background: radial-gradient(circle, rgba(255,215,0,0.12) 0%, transparent 70%);
+    z-index: -1; pointer-events: none;
 }
 
-.glass-list { background: rgba(255, 255, 255, 0.1); padding: 12px; }
+/* 거창하고 세련된 타이틀 */
+.main-section-title {
+    font-size: 22px !important; font-weight: 900 !important; text-align: center;
+    margin-bottom: 20px !important; padding: 18px !important;
+    
+    /* 황금빛 그라데이션 텍스트 */
+    background: linear-gradient(135deg, #FFDF00 0%, #D4AF37 50%, #FFF3A0 100%) !important;
+    -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+    
+    /* 묵직하고 고급스러운 테두리 */
+    border: 1px solid rgba(255, 215, 0, 0.3) !important; border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 2px 10px rgba(255, 215, 0, 0.1) !important;
+    background-color: rgba(20, 20, 20, 0.6) !important; 
+    backdrop-filter: blur(15px) !important; letter-spacing: 1px; position: relative;
+}
+.main-section-title::before, .main-section-title::after {
+    content: '✨'; font-size: 16px; position: absolute; top: 50%; transform: translateY(-50%);
+    -webkit-text-fill-color: initial; /* 이모지 색상 복구 */
+}
+.main-section-title::before { left: 20px; }
+.main-section-title::after { right: 20px; }
+
+/* 리스트 컨테이너 고급화 */
+.glass-list { 
+    background: rgba(15, 25, 40, 0.6) !important; padding: 16px !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3), inset 0 0 20px rgba(255,255,255,0.05) !important;
+}
 
 #ranking-list .rank-item {
     background: rgba(255, 255, 255, 0.9) !important;
-    border-radius: 16px !important; margin-bottom: 8px !important;
-    padding: 12px 18px !important; border: none !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
-    color: #333 !important; font-weight: 700 !important;
+    border-radius: 16px !important; margin-bottom: 10px !important;
+    padding: 14px 18px !important; border: none !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+    color: #222 !important; font-weight: 800 !important;
     display: flex !important; align-items: center !important; justify-content: space-between !important;
+    font-size: 16px !important; transition: transform 0.2s ease;
 }
 
-/* 랭킹 1,2,3위 스타일 */
+/* 1위, 2위, 3위 입체감 및 메탈 질감 극대화 */
 #ranking-list .rank-item:nth-child(1) {
-    background: var(--gold-metal) !important; color: #5d4037 !important;
-    border: 1px solid rgba(255, 255, 0, 0.5) !important;
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4) !important;
+    background: linear-gradient(135deg, #FFDF00 0%, #FDB931 50%, #D4AF37 100%) !important; color: #4A3300 !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4), inset 0 2px 5px rgba(255,255,255,0.6) !important;
+    transform: scale(1.03); z-index: 3; position: relative;
 }
 #ranking-list .rank-item:nth-child(2) {
-    background: var(--silver-metal) !important; color: #333 !important;
-    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    background: linear-gradient(135deg, #E0E0E0 0%, #F5F5F5 50%, #BDBDBD 100%) !important; color: #333 !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 6px 20px rgba(200, 200, 200, 0.3) !important;
+    transform: scale(1.015); z-index: 2; position: relative;
 }
 #ranking-list .rank-item:nth-child(3) {
-    background: var(--bronze-metal) !important; color: #3e2723 !important;
-    border: 1px solid rgba(255, 160, 122, 0.5) !important;
+    background: linear-gradient(135deg, #F4A460 0%, #FFDAB9 50%, #CD853F 100%) !important; color: #4A2500 !important;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 4px 15px rgba(205, 133, 63, 0.3) !important;
 }
-.rank-num { font-weight: 900; margin-right: 8px; font-size: 1.1em; }
+.rank-num { font-weight: 900; margin-right: 12px; font-size: 1.2em; }
 
 
-/* ================= 🚨 [핵심 수정 2] 하단 네비게이션 바 & +버튼 복구 ================= */
+/* ================= 하단 네비게이션 바 & +버튼 ================= */
 .bottom-nav-bar.glass-nav {
     position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
     width: calc(100% - 30px); max-width: 480px; padding: 10px;
@@ -142,16 +182,15 @@ body.main-body-theme::before {
     box-shadow: 0 15px 35px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.7);
 }
 
-/* 🚨 하단 왼쪽 FAB (+) 버튼 강제 노출 및 스타일링 */
+/* 🚨 하단 왼쪽 FAB (+) 버튼 노출 */
 .fab-plus {
-    display: flex !important; /* JS가 숨겨도 강제로 보이게 함 */
+    display: flex !important; 
     width: 48px; height: 48px; border-radius: 50%;
-    background: rgba(255, 255, 255, 0.95); /* 흰색 강조 */
-    border: 2px solid white;
+    background: rgba(255, 255, 255, 0.95); border: 2px solid white;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     color: var(--ios-blue); font-size: 28px; font-weight: 300;
     flex-shrink: 0; justify-content: center; align-items: center; 
-    cursor: pointer; padding-bottom: 4px; /* + 기호 위치 보정 */
+    cursor: pointer; padding-bottom: 4px; 
 }
 .fab-plus:active { transform: scale(0.9); }
 
@@ -165,27 +204,3 @@ body.main-body-theme::before {
     cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 .main-pill-btn:active { transform: scale(0.98); }
-
-
-/* ================= 팝업 (바텀 시트) ================= */
-.sheet-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 10, 0.6); z-index: 10000; 
-    display: none; opacity: 0; transition: opacity 0.3s;
-}
-.sheet-overlay.active { opacity: 1; }
-
-.ios-sheet {
-    position: absolute; bottom: -100%; left: 0; width: 100%;
-    background: rgba(240, 240, 250, 0.9); /* 밝은 배경 */
-    backdrop-filter: blur(30px);
-    border-radius: 24px 24px 0 0; padding: 20px; box-sizing: border-box;
-    transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.sheet-overlay.active .ios-sheet { bottom: 0; }
-
-.sheet-handle { width: 40px; height: 5px; background: #C7C7CC; border-radius: 3px; margin: 0 auto 20px; }
-.sheet-menu-list { background: white; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
-.sheet-item { padding: 18px; text-align: center; font-size: 17px; cursor: pointer; color: #007AFF; font-weight: 600; border-bottom: 1px solid #eee; }
-.sheet-item:last-child { border-bottom: none; }
-.sheet-item.close { color: #FF3B30; font-weight: 700; margin-top: 10px; background: white; border-radius: 14px; }

@@ -1,15 +1,19 @@
 /**
  * 👑 common.js: 오답 노트 및 단계별 UI 전환 통합 엔진
- * 최종 수정: 오답노트 절(Verse)별 그룹화 기능 추가
+ * 업데이트: 치우침 없는 깔끔한 중앙 정렬 글래스모피즘 팝업 모션 최적화
  */
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const SERVER_URL = "https://script.google.com/macros/s/AKfycbxfsNxtCL1ZH85l7ltm0M4e4uvGOJVDZTiK0UEzfYmdcMlOP2sZWFn9cmkyn92v_q7K/exec";
+const SERVER_URL = "https://script.google.com/macros/s/AKfycbw238LQiorJpRUX_okKLvyH6EB65GSgq0D9kfiJNpWiUd35LZG_9o5sEbh0ZdJRC9TA/exec";
 const GROUP_LINK = "https://t.me/+akm0mVey8WQ4OTBl"; 
 
 let allData = []; 
 let currentAnswers = []; 
+
+// 🚨 모드 상태 관리 변수
+let isRealtimeMode = false;
+let isIgnoreSpaceMode = false;
 
 async function init() {
     const loader = document.getElementById('loading');
@@ -34,24 +38,118 @@ function updateNavUI(isMain) {
         if (topPlus) topPlus.style.display = 'none'; 
     } else {
         if (bottomNav) bottomNav.style.display = 'none';
-        const quizArea = document.getElementById('quiz-area');
-        if (quizArea && quizArea.style.display === 'block') {
-            if (topPlus) topPlus.style.display = 'none';
-        } else {
-            if (topPlus) topPlus.style.display = 'flex';
-        }
+        if (topPlus) topPlus.style.display = 'flex';
     }
 }
 
+// 🚨 중앙에서 부드럽게 나타나는 팝업 제어
 function toggleIOSSheet() {
     const overlay = document.getElementById('ios-sheet-overlay');
     if (!overlay) return;
-    if (overlay.style.display === 'block') {
-        overlay.classList.remove('active');
-        setTimeout(() => { overlay.style.display = 'none'; }, 400);
+    
+    const isQuizActive = document.getElementById('quiz-area')?.style.display === 'block';
+    const menuGeneral = document.getElementById('menu-general');
+    const menuQuiz = document.getElementById('menu-quiz');
+    
+    // 상황에 맞는 메뉴 HTML 노출
+    if (isQuizActive) {
+        if (menuGeneral) menuGeneral.style.display = 'none';
+        if (menuQuiz) menuQuiz.style.display = 'block';
     } else {
-        overlay.style.display = 'block';
-        setTimeout(() => { overlay.classList.add('active'); }, 10);
+        if (menuGeneral) menuGeneral.style.display = 'block';
+        if (menuQuiz) menuQuiz.style.display = 'none';
+    }
+
+    if (overlay.classList.contains('active')) {
+        // 닫힐 때: 부드럽게 작아지면서 사라짐
+        overlay.classList.remove('active');
+        // CSS transition 시간(0.3초)이 완전히 끝난 후 display none 처리
+        setTimeout(() => { overlay.style.display = 'none'; }, 300);
+    } else {
+        // 열릴 때: 화면 중앙에 완벽하게 배치(flex) 후 애니메이션 발동
+        overlay.style.display = 'flex';
+        // 브라우저 렌더링 프레임 확보 후 클래스 추가 (매우 중요)
+        setTimeout(() => { overlay.classList.add('active'); }, 20);
+    }
+}
+
+// 🌟 청년회 소식 아코디언 메뉴
+window.toggleNewsAccordion = function() {
+    const content = document.getElementById('news-content');
+    const arrow = document.getElementById('news-arrow');
+    if (content.classList.contains('expanded')) {
+        content.classList.remove('expanded');
+        arrow.style.transform = 'rotate(0deg)';
+    } else {
+        content.classList.add('expanded');
+        arrow.style.transform = 'rotate(180deg)';
+    }
+};
+
+// 🚨 모드 UI 텍스트 업데이트
+function updateModeStatusUI() {
+    const rtStatus = document.getElementById('status-realtime');
+    const isStatus = document.getElementById('status-ignorespace');
+    if(rtStatus) rtStatus.innerText = isRealtimeMode ? '🟢 켜짐' : '⚪ 꺼짐';
+    if(isStatus) isStatus.innerText = isIgnoreSpaceMode ? '🟢 켜짐' : '⚪ 꺼짐';
+}
+
+function toggleRealtimeMode() {
+    isRealtimeMode = !isRealtimeMode;
+    updateModeStatusUI();
+    toggleIOSSheet(); 
+    applyRealtimeCheckToAll(); 
+}
+
+function toggleIgnoreSpaceMode() {
+    isIgnoreSpaceMode = !isIgnoreSpaceMode;
+    updateModeStatusUI();
+    toggleIOSSheet(); 
+    applyRealtimeCheckToAll(); 
+}
+
+function applyRealtimeCheckToAll() {
+    const inputs = document.querySelectorAll('.q-inline-input');
+    inputs.forEach(input => {
+        if (isRealtimeMode) {
+            checkInputRealtime(input);
+        } else {
+            input.style.color = 'var(--ios-blue)'; 
+        }
+    });
+}
+
+function checkInputRealtime(input) {
+    if (!isRealtimeMode) return;
+    let userVal = input.value;
+    if (!userVal) {
+        input.style.color = 'var(--ios-blue)';
+        return;
+    }
+    
+    let ans = input.dataset.ans || "";
+    let checkUser = isIgnoreSpaceMode ? userVal.replace(/\s/g, '') : userVal;
+    let checkAns = isIgnoreSpaceMode ? ans.replace(/\s/g, '') : ans;
+
+    if (checkAns.startsWith(checkUser)) {
+        input.style.color = '#28a745'; 
+    } else {
+        input.style.color = '#dc3545'; 
+    }
+}
+
+function showHintModal() {
+    const modal = document.getElementById('hint-modal');
+    if(modal) {
+        modal.style.display = 'flex'; // 중앙 정렬
+        setTimeout(() => { modal.classList.add('active'); }, 10);
+    }
+}
+function closeHintModal() {
+    const modal = document.getElementById('hint-modal');
+    if(modal) {
+        modal.classList.remove('active');
+        setTimeout(() => { modal.style.display = 'none'; }, 400);
     }
 }
 
@@ -64,19 +162,13 @@ function hideAllSections() {
 
 function showMain() {
     hideAllSections();
-    document.getElementById('main-menu').style.display = 'block';
+    document.getElementById('main-menu').style.display = 'flex';
     updateNavUI(true);
 }
 
 function showQuarterMenu() {
     hideAllSections();
     document.getElementById('quarter-menu').style.display = 'block';
-    updateNavUI(false);
-}
-
-function backToListArea() {
-    hideAllSections();
-    document.getElementById('list-area').style.display = 'block';
     updateNavUI(false);
 }
 
@@ -88,30 +180,33 @@ function resetAllQuiz() {
         input.value = '';
         input.readOnly = false;
         input.classList.remove('input-correct', 'input-wrong');
+        input.style.color = 'var(--ios-blue)';
     });
     window.scrollTo(0,0);
 }
 
-
-/**
- * 4. 결과 화면 및 오답 노트 처리
- */
 function submitQuiz() {
     const inputs = document.querySelectorAll('.q-inline-input');
     if (inputs.length === 0) return;
 
     let correctCount = 0;
     const totalBlanks = inputs.length; 
-    
-    // 오답노트 생성을 위한 데이터 수집
     const reviewData = []; 
 
     inputs.forEach((input, index) => {
         const userVal = input.value.trim();
         const correctValRaw = currentAnswers[index] ? currentAnswers[index].trim() : "";
-        const ref = input.dataset.ref || `문항 ${index + 1}`; // 구절 정보 가져오기
+        const ref = input.dataset.ref || `문항 ${index + 1}`; 
         
-        const normalize = (text) => text.replace(/\s/g, '').replace(/찌어다/g, '지어다');
+        const normalize = (text) => {
+            let t = text.replace(/찌어다/g, '지어다').trim();
+            if (isIgnoreSpaceMode) {
+                return t.replace(/\s/g, ''); 
+            } else {
+                return t.replace(/\s+/g, ' '); 
+            }
+        };
+
         const cleanUserVal = normalize(userVal);
         const cleanCorrectVal = normalize(correctValRaw);
         
@@ -121,11 +216,12 @@ function submitQuiz() {
             correctCount++;
             input.classList.add('input-correct');
             input.classList.remove('input-wrong');
+            input.style.color = '#28a745'; 
         } else {
             input.classList.add('input-wrong');
             input.classList.remove('input-correct');
+            input.style.color = '#dc3545'; 
             
-            // 틀린 것만 오답 데이터에 추가
             reviewData.push({
                 ref: ref,
                 user: userVal || "(미입력)",
@@ -141,7 +237,6 @@ function submitQuiz() {
         saveScoreToDB(finalScore);
     }
 
-    // 🚨 변경된 오답노트 렌더링 함수 호출
     renderReviewNoteGrouped(reviewData);
 
     document.getElementById('quiz-area').style.display = 'none';
@@ -173,9 +268,6 @@ function submitQuiz() {
     window.scrollTo(0, 0);
 }
 
-/**
- * 🚨 [신규] 절별로 그룹화하여 오답노트 렌더링
- */
 function renderReviewNoteGrouped(reviewData) {
     const container = document.getElementById('review-list');
     container.innerHTML = "";
@@ -185,7 +277,6 @@ function renderReviewNoteGrouped(reviewData) {
         return;
     }
 
-    // 1. 데이터를 절(Ref)별로 그룹화
     const groups = {};
     reviewData.forEach(item => {
         if (!groups[item.ref]) {
@@ -194,15 +285,12 @@ function renderReviewNoteGrouped(reviewData) {
         groups[item.ref].push(item);
     });
 
-    // 2. 그룹별로 카드 생성
     for (const [ref, items] of Object.entries(groups)) {
-        // 구절 헤더
         const groupDiv = document.createElement('div');
         groupDiv.style.cssText = "background:white; border-radius:14px; padding:15px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05);";
         
         let groupHTML = `<div style="font-weight:900; color:#1c1c1e; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">📖 ${ref}</div>`;
         
-        // 해당 구절의 틀린 문제들 나열
         items.forEach(item => {
             groupHTML += `
                 <div style="margin-bottom:12px; font-size:15px;">

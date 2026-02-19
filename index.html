@@ -35,7 +35,7 @@
         </div>
     </div>
 
-    <button id="top-right-plus" class="top-right-btn" onclick="toggleIOSSheet()" style="display:none;">
+    <button id="top-right-plus" class="top-right-btn" onclick="toggleIOSSheet()" style="display:none; z-index: 1600;">
         <span>+</span>
     </button>
 
@@ -88,9 +88,14 @@
                 <span class="nav-btn">〈 뒤로</span>
             </div>
             
-            <button class="top-right-btn" onclick="resetAllQuiz()">
-                <span style="font-size: 24px; font-weight: 700;">↻</span>
-            </button>
+            <div style="position: fixed; top: 8px; right: 62px; z-index: 1500; display: flex; gap: 8px;">
+                <button class="top-right-btn" onclick="resetAllQuiz()" style="position: relative; top: 0; right: 0;">
+                    <span style="font-size: 24px; font-weight: 700;">↻</span>
+                </button>
+                <button class="top-right-btn" onclick="showHintModal()" style="position: relative; top: 0; right: 0;">
+                    <span style="font-size: 20px;">💡</span>
+                </button>
+            </div>
 
             <div id="quiz-text"></div>
             
@@ -139,12 +144,53 @@
         <div class="ios-sheet" onclick="event.stopPropagation()">
             <div class="sheet-handle"></div>
             <div class="sheet-content">
-                <h3>메뉴</h3>
-                <div class="sheet-menu-list">
-                    <div class="sheet-item" onclick="goToChallengeGroup()">업데이트 예정</div>
-                    <div class="sheet-item close" onclick="toggleIOSSheet()">닫기</div>
+                
+                <div id="menu-general" style="display: none;">
+                    <h3 style="margin:0 0 10px 0; text-align:center; color:#1c1c1e;">메뉴</h3>
+                    <div class="sheet-menu-list">
+                        <div class="sheet-item" style="display:flex; justify-content:space-between; align-items:center;" onclick="toggleNewsAccordion()">
+                            <span>📢 청년회 소식 보기</span>
+                            <span id="news-arrow" style="font-size:12px; transition:transform 0.3s;">▼</span>
+                        </div>
+                        
+                        <div id="news-content" class="news-accordion-content">
+                            <div class="news-item" style="cursor: pointer;" onclick="window.open('https://po3561.github.io/Andre_Youth_player/', '_blank')">
+    ✨ 3월 5일 찬양기도회 (플레이어 열기)
+</div>
+                        </div>
+                        
+                        <div class="sheet-item" style="text-align:center;" onclick="goToChallengeGroup()">🔗 챌린지 방 바로가기</div>
+                        <div class="sheet-item close" style="text-align:center;" onclick="toggleIOSSheet()">닫기</div>
+                    </div>
                 </div>
+
+                <div id="menu-quiz" style="display: none;">
+                    <h3 style="color:#007AFF; margin:0 0 10px 0; text-align:center;">🛠 시험 특수 옵션</h3>
+                    <div class="sheet-menu-list">
+                        <div class="sheet-item" onclick="toggleRealtimeMode()">
+                            실시간 검사 모드 <span id="status-realtime">⚪ 꺼짐</span>
+                        </div>
+                        <div class="sheet-item" onclick="toggleIgnoreSpaceMode()">
+                            띄어쓰기 무시 모드 <span id="status-ignorespace">⚪ 꺼짐</span>
+                        </div>
+                        <div class="sheet-item" onclick="shuffleCurrentQuiz()">
+                            🔀 전체 다시 섞기
+                        </div>
+                        <div class="sheet-item close" style="text-align:center;" onclick="toggleIOSSheet()">닫기</div>
+                    </div>
+                </div>
+
             </div>
+        </div>
+    </div>
+
+    <div id="hint-modal" class="sheet-overlay" onclick="closeHintModal()">
+        <div class="ios-sheet" onclick="event.stopPropagation()" style="height: 70vh; display: flex; flex-direction: column;">
+            <div class="sheet-handle"></div>
+            <h3 id="hint-chapter-title" style="color:#007AFF; margin: 0 0 15px 0; text-align: center; text-shadow:none;">📖 말씀 보기</h3>
+            <div id="hint-content" style="text-align:left; line-height:1.8; font-size:16px; font-weight: 500; color:#333; overflow-y: auto; flex: 1; padding: 0 10px;">
+            </div>
+            <button class="submit-btn" onclick="closeHintModal()" style="margin-top:15px; flex-shrink:0;">닫기</button>
         </div>
     </div>
 
