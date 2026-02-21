@@ -1,6 +1,6 @@
 /**
  * 👑 heavenlyExam.js: 지능형 구절 병합 및 핵심 구문 추출 엔진
- * 업데이트: 괄호(빈칸) 연속 출현 원천 차단 로직(Anti-adjacency) 적용 및 인덱스 기반 정밀 채점
+ * 업데이트: 괄호(빈칸) 연속 출현 원천 차단 및 정답 여러 개 하나로 묶기(최대 5어절) + 상단 옵션바 연동
  */
 
 let heavenlyData = null; 
@@ -34,7 +34,6 @@ function showQuarterMenu(highlightId, color) {
     window.scrollTo(0, 0);
 }
 
-// 🌟 과장님의 완벽한 원본 통신 로직 그대로 적용
 async function loadQuarterData(qName) {
     const loadingEl = document.getElementById('loading');
     if(loadingEl) loadingEl.style.display = 'block';
@@ -84,16 +83,19 @@ function renderChapterList(qName) {
     });
 }
 
-// 🚨 전체 다시 섞기 기능 (+메뉴 연동용)
+// 🚨 전체 다시 섞기 기능
 function shuffleCurrentQuiz() {
     if(confirm("문제를 전체 다시 섞고 초기화 하시겠습니까?")) {
-        if (typeof toggleIOSSheet === 'function') toggleIOSSheet(); // 메뉴창 닫기
+        if (typeof toggleIOSSheet === 'function') {
+            const overlay = document.getElementById('ios-sheet-overlay');
+            if(overlay && overlay.classList.contains('active')) toggleIOSSheet();
+        }
         if (currentQuizChapterData) startHeavenlyQuiz(currentQuizChapterData); 
     }
 }
 
 /**
- * 📝 지능형 퀴즈 엔진 (빈칸 연속 방지 로직 적용)
+ * 📝 지능형 퀴즈 엔진 (빈칸 연속 방지 및 최대 5단어 병합 로직 적용)
  */
 function startHeavenlyQuiz(chapter) {
     if (typeof hideAllSections === 'function') hideAllSections();
@@ -101,16 +103,22 @@ function startHeavenlyQuiz(chapter) {
     const quizText = document.getElementById('quiz-text');
     
     quizArea.style.display = 'block';
-    if (typeof updateNavUI === 'function') updateNavUI(false);
+    // 🚨 퀴즈 화면 진입 시 +버튼 숨김 처리 (true 파라미터 전달)
+    if (typeof updateNavUI === 'function') updateNavUI(false, true); 
+    
     document.getElementById('quiz-title').innerText = `계시록 제 ${chapter.name}`;
     quizText.innerHTML = "";
     currentAnswers = []; 
 
-    // 현재 챕터 데이터 보존
     currentQuizChapterData = chapter;
     currentFullVerses = [...chapter.verses];
     
-    // 전체 힌트(말씀 보기) 데이터 세팅
+    // 🚨 퀴즈 생성 시 현재 토글 스위치 상태를 모드에 맞게 초기화
+    const rtToggle = document.getElementById('toggle-realtime');
+    const isToggle = document.getElementById('toggle-ignorespace');
+    if (rtToggle && typeof isRealtimeMode !== 'undefined') rtToggle.checked = isRealtimeMode;
+    if (isToggle && typeof isIgnoreSpaceMode !== 'undefined') isToggle.checked = isIgnoreSpaceMode;
+
     const hintContent = document.getElementById('hint-content');
     if(hintContent) {
         hintContent.innerHTML = currentFullVerses.map(v => `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">${v}</div>`).join('');
@@ -157,7 +165,8 @@ function startHeavenlyQuiz(chapter) {
                 if (isBlankCandidate[j]) {
                     let chunk = words[j];
                     let startIdx = j;
-                    while (j + 1 < words.length && isBlankCandidate[j + 1] && (j - startIdx) < 3) {
+                    // 💡 [핵심] 여러 단어가 정답일 때 하나의 괄호로 합쳐지도록 병합 로직 강화 (최대 5어절)
+                    while (j + 1 < words.length && isBlankCandidate[j + 1] && (j - startIdx) < 5) {
                         chunk += " " + words[++j];
                     }
                     chunks.push({ text: chunk, isBlank: true });
@@ -166,23 +175,19 @@ function startHeavenlyQuiz(chapter) {
                 }
             }
 
-            // 💡 [핵심] 괄호 연속 출현 방지 알고리즘 적용
-            // 각 덩어리에 고유 인덱스를 부여하여 앞뒤로 인접한 빈칸이 생기지 않도록 차단
             let blankEligible = chunks.map((c, index) => ({ ...c, index })).filter(c => c.isBlank);
-            blankEligible.sort(() => Math.random() - 0.5); // 랜덤 셔플
+            blankEligible.sort(() => Math.random() - 0.5); 
             
             let targetCount = Math.ceil(blankEligible.length * 0.28) || 1;
             let selectedIndices = new Set();
 
             for (let candidate of blankEligible) {
                 if (selectedIndices.size >= targetCount) break;
-                // 이전 덩어리나 다음 덩어리가 이미 빈칸으로 선택되지 않았을 때만 승인!
                 if (!selectedIndices.has(candidate.index - 1) && !selectedIndices.has(candidate.index + 1)) {
                     selectedIndices.add(candidate.index);
                 }
             }
 
-            // 선택된 인덱스를 바탕으로 HTML 렌더링
             chunks.forEach((chunk, index) => {
                 if (selectedIndices.has(index)) {
                     currentAnswers.push(chunk.text);
@@ -198,14 +203,11 @@ function startHeavenlyQuiz(chapter) {
         quizText.appendChild(div);
     });
 
-    // 실시간 검사 이벤트 부착
     setTimeout(() => {
         const inputs = document.querySelectorAll('.q-inline-input');
         inputs.forEach(input => {
             input.addEventListener('input', function() {
-                if (typeof checkInputRealtime === 'function') {
-                    checkInputRealtime(this);
-                }
+                if (typeof checkInputRealtime === 'function') checkInputRealtime(this);
             });
         });
     }, 100);
@@ -213,9 +215,6 @@ function startHeavenlyQuiz(chapter) {
     window.scrollTo(0,0);
 }
 
-// =========================================================
-// 💡 개별 문항 힌트 팝업 엔진
-// =========================================================
 function showItemHint(encodedText) {
     const text = decodeURIComponent(encodedText);
     let modal = document.getElementById('item-hint-overlay');

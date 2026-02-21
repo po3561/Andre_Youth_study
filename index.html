@@ -52,6 +52,7 @@
 
             <div class="ranking-container">
                 <h3 class="main-section-title">천국고시 통달 랭킹</h3>
+                <p style="font-size: 1em; text-align: center; margin: 2em auto;">매주 주일 랭킹은 리셋됩니다.</p>
                 <div id="ranking-list" class="glass-list">
                     <p style="text-align:center; color:#555; padding:20px;">랭킹 불러오는 중...</p>
                 </div>
@@ -88,13 +89,25 @@
                 <span class="nav-btn">〈 뒤로</span>
             </div>
             
-            <div style="position: fixed; top: 8px; right: 62px; z-index: 1500; display: flex; gap: 8px;">
+            <div style="position: fixed; top: 8px; right: 10px; z-index: 1500; display: flex; gap: 8px;">
                 <button class="top-right-btn" onclick="resetAllQuiz()" style="position: relative; top: 0; right: 0;">
                     <span style="font-size: 24px; font-weight: 700;">↻</span>
                 </button>
                 <button class="top-right-btn" onclick="showHintModal()" style="position: relative; top: 0; right: 0;">
                     <span style="font-size: 20px;">💡</span>
                 </button>
+            </div>
+
+            <div class="quiz-options-bar">
+                <div class="toggle-row">
+                    <span class="toggle-label">실시간 정답 확인</span>
+                    <input type="checkbox" class="ios-toggle-switch" id="toggle-realtime" onchange="toggleRealtimeMode(this)">
+                </div>
+                <div class="toggle-row">
+                    <span class="toggle-label">띄어쓰기 무시 모드</span>
+                    <input type="checkbox" class="ios-toggle-switch" id="toggle-ignorespace" onchange="toggleIgnoreSpaceMode(this)">
+                </div>
+                <button class="shuffle-btn-inline" onclick="shuffleCurrentQuiz()">🔀 문제 전체 다시 섞기</button>
             </div>
 
             <div id="quiz-text"></div>
@@ -145,7 +158,7 @@
             <div class="sheet-handle"></div>
             <div class="sheet-content">
                 
-                <div id="menu-general" style="display: none;">
+                <div id="menu-general">
                     <h3 style="margin:0 0 10px 0; text-align:center; color:#1c1c1e;">메뉴</h3>
                     <div class="sheet-menu-list">
                         <div class="sheet-item" style="display:flex; justify-content:space-between; align-items:center;" onclick="toggleNewsAccordion()">
@@ -160,22 +173,6 @@
                         </div>
                         
                         <div class="sheet-item" style="text-align:center;" onclick="goToChallengeGroup()">🔗 챌린지 방 바로가기</div>
-                        <div class="sheet-item close" style="text-align:center;" onclick="toggleIOSSheet()">닫기</div>
-                    </div>
-                </div>
-
-                <div id="menu-quiz" style="display: none;">
-                    <h3 style="color:#007AFF; margin:0 0 10px 0; text-align:center;">🛠 시험 특수 옵션</h3>
-                    <div class="sheet-menu-list">
-                        <div class="sheet-item" onclick="toggleRealtimeMode()">
-                            실시간 검사 모드 <span id="status-realtime">⚪ 꺼짐</span>
-                        </div>
-                        <div class="sheet-item" onclick="toggleIgnoreSpaceMode()">
-                            띄어쓰기 무시 모드 <span id="status-ignorespace">⚪ 꺼짐</span>
-                        </div>
-                        <div class="sheet-item" onclick="shuffleCurrentQuiz()">
-                            🔀 전체 다시 섞기
-                        </div>
                         <div class="sheet-item close" style="text-align:center;" onclick="toggleIOSSheet()">닫기</div>
                     </div>
                 </div>

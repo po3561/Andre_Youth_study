@@ -1,10 +1,8 @@
 /**
  * 👑 style.css
- * 업데이트: 엉성함 제로! 완벽하게 중앙에서 뜨는 영롱한 글래스모피즘 팝업 적용
- * 비고: 누락된 디자인 요소 완벽 유지 및 기존 바텀 시트 간섭 완전 차단
+ * 업데이트: 인라인 토글 스위치(iOS) CSS 최적화 적용
  */
 
-/* [1. 초기화] */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { -ms-overflow-style: none; scrollbar-width: none; }
 ::-webkit-scrollbar { display: none; }
@@ -37,7 +35,6 @@ h2, h3 { font-weight: 800; color: #ffffff !important; text-shadow: 0 2px 4px rgb
 h2 { margin: 0 0 20px; font-size: clamp(22px, 6vw, 28px); word-break: keep-all; }
 h3 { font-size: clamp(18px, 5vw, 22px); margin-top: 0; }
 
-/* 🚨 디데이 바 상단 고정 */
 .dday-card {
     position: fixed !important;
     top: 15px !important;
@@ -96,7 +93,41 @@ h3 { font-size: clamp(18px, 5vw, 22px); margin-top: 0; }
 }
 .top-right-btn span { display: flex; align-items: center; justify-content: center; margin-top: -2px; }
 
-.ranking-container { margin-top: 10px; }
+/* =========================================================
+   🚨 새로 추가된 인라인 토글 스위치 (iOS 애플 디자인)
+   ========================================================= */
+.quiz-options-bar {
+    display: flex; flex-direction: column; gap: 12px;
+    background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 20px;
+    padding: 16px; margin: 15px 0 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.toggle-row {
+    display: flex; justify-content: space-between; align-items: center;
+}
+.toggle-label { font-size: 15px; font-weight: 800; color: #333; }
+.ios-toggle-switch {
+    position: relative; width: 52px; height: 32px;
+    -webkit-appearance: none; appearance: none;
+    background: #e5e5ea; outline: none; border-radius: 16px;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1); transition: background 0.3s; cursor: pointer; margin: 0;
+}
+.ios-toggle-switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 28px; height: 28px; background: #fff; border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.3s;
+}
+.ios-toggle-switch:checked { background: #34C759; }
+.ios-toggle-switch:checked::after { transform: translateX(20px); }
+.shuffle-btn-inline {
+    width: 100%; padding: 14px; border-radius: 14px; background: rgba(0, 122, 255, 0.1);
+    color: #007AFF; font-weight: 800; font-size: 15px; border: none; cursor: pointer;
+    margin-top: 8px; transition: background 0.2s, transform 0.1s;
+}
+.shuffle-btn-inline:active { background: rgba(0, 122, 255, 0.2); transform: scale(0.98); }
+
+
+.ranking-container { margin-top: 15px; }
 .main-section-title { font-size: 20px; margin-bottom: 15px; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 .glass-list { background: rgba(255,255,255,0.9); border-radius: 20px; padding: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
 
@@ -185,7 +216,6 @@ h3 { font-size: clamp(18px, 5vw, 22px); margin-top: 0; }
 #review-section { width: 100%; box-sizing: border-box; }
 #review-section h3 { margin: 15px 0 10px; font-size: 18px; }
 
-/* 📸 캡처 가이드 모달 */
 #capture-guide { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(40, 50, 80, 0.8); backdrop-filter: blur(15px); display: none; z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
 .guide-box { background: white; border-radius: 28px; padding: 20px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); display: flex; flex-direction: column; gap: 10px; margin: 0 auto; }
 .guide-box h3 { color: #333 !important; text-shadow: none; margin: 0 0 10px 0; font-size: 20px; }
@@ -193,7 +223,6 @@ h3 { font-size: clamp(18px, 5vw, 22px); margin-top: 0; }
 .guide-box .submit-btn { margin: 0; width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; }
 .guide-box .submit-btn.secondary { background: #E3F2FD; color: #007AFF; }
 
-/* ⚔️ RPG 닉네임 입력창 */
 #nickname-area { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); z-index: 99999; align-items: center; justify-content: center; }
 .rpg-card { background: rgba(20, 20, 35, 0.9); border: 1px solid rgba(100, 200, 255, 0.5); box-shadow: 0 0 40px rgba(0, 122, 255, 0.5); border-radius: 30px; padding: 30px 20px; text-align: center; width: 90%; max-width: 380px; box-sizing: border-box; margin: 0 auto; }
 .rpg-main-title { color: #fff; font-size: 22px; margin: 0 0 10px; text-shadow: 0 0 10px rgba(0, 122, 255, 0.8); }
@@ -204,7 +233,6 @@ h3 { font-size: clamp(18px, 5vw, 22px); margin-top: 0; }
 .rpg-btn.primary { background: #007AFF; color: white; }
 .rpg-btn.secondary { background: rgba(255,255,255,0.15); color: #ddd; }
 
-/* ⏳ 로딩 애니메이션 */
 #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--rpg-sky-gradient); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; text-align: center; }
 #loading div:first-child { font-size: 64px; margin-bottom: 24px; animation: float 2s infinite ease-in-out; }
 #loading span { font-size: 18px; font-weight: 700; color: white; text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
@@ -212,10 +240,6 @@ h3 { font-size: clamp(18px, 5vw, 22px); margin-top: 0; }
 
 #main-menu, #list-area, #quiz-area, #result-area, #capture-guide, #quarter-menu { display: none; }
 
-
-/* =========================================================
-   🚨 [핵심] 완벽한 중앙 정렬 글래스모피즘 팝업 (치우침 해결)
-   ========================================================= */
 .sheet-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -225,7 +249,6 @@ h3 { font-size: clamp(18px, 5vw, 22px); margin-top: 0; }
 .sheet-overlay.active { opacity: 1; }
 
 .ios-sheet {
-    /* 기존 main-ios-style.css의 바텀 시트 속성을 무력화하고 중앙으로 고정 */
     position: relative !important; bottom: auto !important; left: auto !important; 
     
     background: rgba(255, 255, 255, 0.88) !important;
@@ -236,7 +259,6 @@ h3 { font-size: clamp(18px, 5vw, 22px); margin-top: 0; }
     width: 100% !important; max-width: 360px !important;
     box-shadow: 0 30px 60px rgba(0,0,0,0.3) !important;
     
-    /* 화면 정중앙에서 부드럽게 커지는 세련된 팝업 모션 */
     transform: scale(0.85); 
     opacity: 0;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease !important;
@@ -258,7 +280,6 @@ h3 { font-size: clamp(18px, 5vw, 22px); margin-top: 0; }
 .sheet-item:active { transform: scale(0.97); background: rgba(0,0,0,0.08); }
 .sheet-item.close { background: rgba(255, 59, 48, 0.1); color: #FF3B30; }
 
-/* 청년회 소식 아코디언 스타일 */
 .news-accordion-content {
     max-height: 0; overflow: hidden;
     transition: max-height 0.4s cubic-bezier(0.25, 1, 0.5, 1), padding 0.4s ease, margin 0.4s ease;

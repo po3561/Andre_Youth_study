@@ -1,6 +1,6 @@
 /**
  * 👑 common.js: 오답 노트 및 단계별 UI 전환 통합 엔진
- * 업데이트: 치우침 없는 깔끔한 중앙 정렬 글래스모피즘 팝업 모션 최적화
+ * 업데이트: 퀴즈 화면 내 인라인 토글 스위치(iOS) 연동 및 +버튼 동적 제어
  */
 const tg = window.Telegram.WebApp;
 tg.expand();
@@ -29,7 +29,8 @@ async function init() {
     }
 }
 
-function updateNavUI(isMain) {
+// 🚨 파라미터 isQuiz 추가: 퀴즈 화면일 경우 + 버튼을 강제로 숨김
+function updateNavUI(isMain, isQuiz = false) {
     const bottomNav = document.getElementById('bottom-action-bar');
     const topPlus = document.getElementById('top-right-plus');
 
@@ -38,42 +39,29 @@ function updateNavUI(isMain) {
         if (topPlus) topPlus.style.display = 'none'; 
     } else {
         if (bottomNav) bottomNav.style.display = 'none';
-        if (topPlus) topPlus.style.display = 'flex';
+        if (topPlus) {
+            topPlus.style.display = isQuiz ? 'none' : 'flex';
+        }
     }
 }
 
-// 🚨 중앙에서 부드럽게 나타나는 팝업 제어
+// 🚨 팝업 제어 (메뉴퀴즈 삭제, 제너럴만 단독 노출)
 function toggleIOSSheet() {
     const overlay = document.getElementById('ios-sheet-overlay');
     if (!overlay) return;
     
-    const isQuizActive = document.getElementById('quiz-area')?.style.display === 'block';
     const menuGeneral = document.getElementById('menu-general');
-    const menuQuiz = document.getElementById('menu-quiz');
-    
-    // 상황에 맞는 메뉴 HTML 노출
-    if (isQuizActive) {
-        if (menuGeneral) menuGeneral.style.display = 'none';
-        if (menuQuiz) menuQuiz.style.display = 'block';
-    } else {
-        if (menuGeneral) menuGeneral.style.display = 'block';
-        if (menuQuiz) menuQuiz.style.display = 'none';
-    }
+    if (menuGeneral) menuGeneral.style.display = 'block';
 
     if (overlay.classList.contains('active')) {
-        // 닫힐 때: 부드럽게 작아지면서 사라짐
         overlay.classList.remove('active');
-        // CSS transition 시간(0.3초)이 완전히 끝난 후 display none 처리
         setTimeout(() => { overlay.style.display = 'none'; }, 300);
     } else {
-        // 열릴 때: 화면 중앙에 완벽하게 배치(flex) 후 애니메이션 발동
         overlay.style.display = 'flex';
-        // 브라우저 렌더링 프레임 확보 후 클래스 추가 (매우 중요)
         setTimeout(() => { overlay.classList.add('active'); }, 20);
     }
 }
 
-// 🌟 청년회 소식 아코디언 메뉴
 window.toggleNewsAccordion = function() {
     const content = document.getElementById('news-content');
     const arrow = document.getElementById('news-arrow');
@@ -86,25 +74,14 @@ window.toggleNewsAccordion = function() {
     }
 };
 
-// 🚨 모드 UI 텍스트 업데이트
-function updateModeStatusUI() {
-    const rtStatus = document.getElementById('status-realtime');
-    const isStatus = document.getElementById('status-ignorespace');
-    if(rtStatus) rtStatus.innerText = isRealtimeMode ? '🟢 켜짐' : '⚪ 꺼짐';
-    if(isStatus) isStatus.innerText = isIgnoreSpaceMode ? '🟢 켜짐' : '⚪ 꺼짐';
-}
-
-function toggleRealtimeMode() {
-    isRealtimeMode = !isRealtimeMode;
-    updateModeStatusUI();
-    toggleIOSSheet(); 
+// 🚨 체크박스 객체를 직접 받아 상태를 반영
+function toggleRealtimeMode(el) {
+    isRealtimeMode = el ? el.checked : !isRealtimeMode;
     applyRealtimeCheckToAll(); 
 }
 
-function toggleIgnoreSpaceMode() {
-    isIgnoreSpaceMode = !isIgnoreSpaceMode;
-    updateModeStatusUI();
-    toggleIOSSheet(); 
+function toggleIgnoreSpaceMode(el) {
+    isIgnoreSpaceMode = el ? el.checked : !isIgnoreSpaceMode;
     applyRealtimeCheckToAll(); 
 }
 
@@ -141,7 +118,7 @@ function checkInputRealtime(input) {
 function showHintModal() {
     const modal = document.getElementById('hint-modal');
     if(modal) {
-        modal.style.display = 'flex'; // 중앙 정렬
+        modal.style.display = 'flex'; 
         setTimeout(() => { modal.classList.add('active'); }, 10);
     }
 }
@@ -169,7 +146,7 @@ function showMain() {
 function showQuarterMenu() {
     hideAllSections();
     document.getElementById('quarter-menu').style.display = 'block';
-    updateNavUI(false);
+    updateNavUI(false); // 퀴즈가 아니므로 + 버튼 활성화
 }
 
 function resetAllQuiz() {
@@ -183,6 +160,29 @@ function resetAllQuiz() {
         input.style.color = 'var(--ios-blue)';
     });
     window.scrollTo(0,0);
+}
+
+function getHighlightedWrongText(ans, usr) {
+    if (!usr || usr === "(미입력)") return `<span style="font-weight:900; color:#FF3B30;">(미입력)</span>`;
+    
+    let ansArr = ans.split(' ');
+    let usrArr = usr.split(' ');
+    let result = [];
+    
+    let maxLen = Math.max(ansArr.length, usrArr.length);
+    for (let i = 0; i < maxLen; i++) {
+        let a = ansArr[i] || "";
+        let u = usrArr[i] || "";
+        
+        if (a === u) {
+            result.push(u); 
+        } else {
+            if (u !== "") {
+                result.push(`<b style="color:#FF3B30; font-weight:900;">${u}</b>`);
+            }
+        }
+    }
+    return result.join(' ');
 }
 
 function submitQuiz() {
@@ -221,13 +221,15 @@ function submitQuiz() {
             input.classList.add('input-wrong');
             input.classList.remove('input-correct');
             input.style.color = '#dc3545'; 
-            
-            reviewData.push({
-                ref: ref,
-                user: userVal || "(미입력)",
-                answer: correctValRaw
-            });
         }
+        
+        reviewData.push({
+            ref: ref,
+            user: userVal || "(미입력)",
+            answer: correctValRaw,
+            isCorrect: isCorrect
+        });
+        
         input.readOnly = true; 
     });
 
@@ -273,7 +275,7 @@ function renderReviewNoteGrouped(reviewData) {
     container.innerHTML = "";
     
     if (reviewData.length === 0) {
-        container.innerHTML = "<div style='text-align:center; padding:20px; color:#555;'>🎉 완벽합니다! 오답이 없습니다.</div>";
+        container.innerHTML = "<div style='text-align:center; padding:20px; color:#555;'>🎉 완벽합니다! 풀이 내역이 없습니다.</div>";
         return;
     }
 
@@ -286,25 +288,38 @@ function renderReviewNoteGrouped(reviewData) {
     });
 
     for (const [ref, items] of Object.entries(groups)) {
+        const isGroupAllCorrect = items.every(i => i.isCorrect);
+        
+        const boxColor = isGroupAllCorrect ? '#28a745' : '#dc3545';
+        const bgColor = isGroupAllCorrect ? '#f1f8e9' : '#fff5f5';
+        const borderColor = isGroupAllCorrect ? '#a5d6a7' : '#ffcdd2';
+        const icon = isGroupAllCorrect ? '✓ 정답' : 'X 오답';
+
         const groupDiv = document.createElement('div');
-        groupDiv.style.cssText = "background:white; border-radius:14px; padding:15px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05);";
+        groupDiv.style.cssText = `background:${bgColor}; border:1px solid ${borderColor}; border-radius:10px; padding:15px; margin-bottom:12px; box-shadow:0 2px 5px rgba(0,0,0,0.03); text-align: left;`;
         
-        let groupHTML = `<div style="font-weight:900; color:#1c1c1e; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">📖 ${ref}</div>`;
+        let groupHTML = `<div style="font-weight:800; color:${boxColor}; font-size:16px;">${ref} ${icon}</div>`;
         
-        items.forEach(item => {
-            groupHTML += `
-                <div style="margin-bottom:12px; font-size:15px;">
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
-                        <span style="font-size:13px; color:#FF3B30; font-weight:700;">내 답:</span>
-                        <span style="color:#FF3B30; text-decoration:line-through;">${item.user}</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:13px; color:#007AFF; font-weight:700;">정답:</span>
-                        <span style="color:#007AFF; font-weight:700;">${item.answer}</span>
-                    </div>
-                </div>
-            `;
-        });
+        if (!isGroupAllCorrect) {
+            items.forEach(item => {
+                if (!item.isCorrect) {
+                    let highlightedUser = getHighlightedWrongText(item.answer, item.user);
+                    
+                    groupHTML += `
+                        <div style="margin-top:12px; font-size:15px; line-height: 1.6; border-top:1px dashed ${borderColor}; padding-top:10px;">
+                            <div style="margin-bottom:8px;">
+                                <span style="font-size:13px; color:#666; font-weight:700; display:block; margin-bottom:2px;">내 답안:</span>
+                                <div style="color:#555;">${highlightedUser}</div>
+                            </div>
+                            <div>
+                                <span style="font-size:13px; color:#666; font-weight:700; display:block; margin-bottom:2px;">정답:</span>
+                                <div style="color:#28a745; font-weight:700;">${item.answer}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        }
         
         groupDiv.innerHTML = groupHTML;
         container.appendChild(groupDiv);
