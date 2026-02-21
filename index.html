@@ -103,7 +103,7 @@
                     <span class="toggle-label">실시간 정답 확인</span>
                     <input type="checkbox" class="ios-toggle-switch" id="toggle-realtime" onchange="toggleRealtimeMode(this)">
                 </div>
-                <div class="toggle-row">
+                <div class="toggle-row" id="row-ignorespace">
                     <span class="toggle-label">띄어쓰기 무시 모드</span>
                     <input type="checkbox" class="ios-toggle-switch" id="toggle-ignorespace" onchange="toggleIgnoreSpaceMode(this)">
                 </div>
@@ -112,7 +112,7 @@
 
             <div id="quiz-text"></div>
             
-            <button class="submit-btn" onclick="submitQuiz()">시험지 제출</button>
+            <button class="submit-btn" id="main-submit-btn" onclick="submitQuiz()">시험지 제출</button>
         </div>
 
         <div id="result-area" style="display:none;">
@@ -131,7 +131,7 @@
             </div>
 
             <div id="review-section" style="width: 100%;">
-                <h3 style="text-align: center; margin-bottom: 10px; font-size: 1.1rem;">📝 통달 확인 (오답 노트)</h3>
+                <h3 style="text-align: center; margin-bottom: 10px; font-size: 1.1rem;">📝 오답 노트 확인</h3>
                 <div id="review-list"></div>
             </div>
         </div>
@@ -159,21 +159,42 @@
             <div class="sheet-content">
                 
                 <div id="menu-general">
-                    <h3 style="margin:0 0 10px 0; text-align:center; color:#1c1c1e;">메뉴</h3>
+                    <h3 style="margin:0 0 15px 0; text-align:center; color:#1c1c1e; font-size: 20px;">메뉴</h3>
+                    
                     <div class="sheet-menu-list">
-                        <div class="sheet-item" style="display:flex; justify-content:space-between; align-items:center;" onclick="toggleNewsAccordion()">
-                            <span>📢 청년회 소식 보기</span>
-                            <span id="news-arrow" style="font-size:12px; transition:transform 0.3s;">▼</span>
+                        <div class="sheet-item" onclick="toggleNewsAccordion()">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:18px;">📢</span>
+                                <span>청년회 소식 보기</span>
+                            </div>
+                            <span id="news-arrow" class="ios-chevron">⌵</span>
                         </div>
                         
                         <div id="news-content" class="news-accordion-content">
                             <div class="news-item" style="cursor: pointer;" onclick="window.open('https://po3561.github.io/Andre_Youth_player/', '_blank')">
-    ✨ 3월 5일 찬양기도회 (플레이어 열기)
-</div>
+                                ✨ 3월 5일 찬양기도회 (플레이어 열기)
+                            </div>
+                        </div>
+<!--
+                        <div class="sheet-item" onclick="openWeeklyFolder()">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:18px;">📝</span>
+                                <span>주간 인맞음 확인 시험</span>
+                            </div>
+                            <span class="ios-chevron">〉</span>
+                        </div>
+  <-->                  
+                        <div class="sheet-item" onclick="goToChallengeGroup()">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:18px;">🔗</span>
+                                <span>챌린지 방 바로가기</span>
+                            </div>
+                            <span class="ios-chevron">〉</span>
                         </div>
                         
-                        <div class="sheet-item" style="text-align:center;" onclick="goToChallengeGroup()">🔗 챌린지 방 바로가기</div>
-                        <div class="sheet-item close" style="text-align:center;" onclick="toggleIOSSheet()">닫기</div>
+                        <div class="sheet-item close" onclick="toggleIOSSheet()">
+                            닫기
+                        </div>
                     </div>
                 </div>
 
@@ -191,10 +212,10 @@
         </div>
     </div>
 
-    <script src="common.js"></script>
-    <script src="rank.js"></script>
-    <script src="heavenlyExam.js"></script>
-    <script src="weeklyExam.js"></script>
+    <script src="common.js?v=20260221_FIX"></script>
+    <script src="rank.js?v=20260221_FIX"></script>
+    <script src="heavenlyExam.js?v=20260221_FIX"></script>
+    <script src="weeklyExam.js?v=20260221_FIX"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

@@ -1,6 +1,6 @@
 /**
  * 👑 common.js: 오답 노트 및 단계별 UI 전환 통합 엔진
- * 업데이트: 퀴즈 화면 내 인라인 토글 스위치(iOS) 연동 및 +버튼 동적 제어
+ * 업데이트: 겹치던 함수들을 완전히 청소하고 하나로 통합 완료
  */
 const tg = window.Telegram.WebApp;
 tg.expand();
@@ -11,7 +11,6 @@ const GROUP_LINK = "https://t.me/+akm0mVey8WQ4OTBl";
 let allData = []; 
 let currentAnswers = []; 
 
-// 🚨 모드 상태 관리 변수
 let isRealtimeMode = false;
 let isIgnoreSpaceMode = false;
 
@@ -29,7 +28,6 @@ async function init() {
     }
 }
 
-// 🚨 파라미터 isQuiz 추가: 퀴즈 화면일 경우 + 버튼을 강제로 숨김
 function updateNavUI(isMain, isQuiz = false) {
     const bottomNav = document.getElementById('bottom-action-bar');
     const topPlus = document.getElementById('top-right-plus');
@@ -45,7 +43,6 @@ function updateNavUI(isMain, isQuiz = false) {
     }
 }
 
-// 🚨 팝업 제어 (메뉴퀴즈 삭제, 제너럴만 단독 노출)
 function toggleIOSSheet() {
     const overlay = document.getElementById('ios-sheet-overlay');
     if (!overlay) return;
@@ -74,7 +71,6 @@ window.toggleNewsAccordion = function() {
     }
 };
 
-// 🚨 체크박스 객체를 직접 받아 상태를 반영
 function toggleRealtimeMode(el) {
     isRealtimeMode = el ? el.checked : !isRealtimeMode;
     applyRealtimeCheckToAll(); 
@@ -143,10 +139,31 @@ function showMain() {
     updateNavUI(true);
 }
 
-function showQuarterMenu() {
+// 🚨 중복되던 showQuarterMenu 로직을 이곳 하나로 완벽히 통합
+function showQuarterMenu(highlightId, color) {
     hideAllSections();
-    document.getElementById('quarter-menu').style.display = 'block';
-    updateNavUI(false); // 퀴즈가 아니므로 + 버튼 활성화
+    const quarterMenu = document.getElementById('quarter-menu');
+    if (quarterMenu) quarterMenu.style.display = 'block';
+    updateNavUI(false); 
+    
+    // 버튼, 토글 초기화 (주간시험 -> 천국고시 복귀 시)
+    const rowIgnore = document.getElementById('row-ignorespace');
+    if(rowIgnore) rowIgnore.style.display = 'flex';
+    
+    const submitBtn = document.getElementById('main-submit-btn');
+    if(submitBtn) {
+        submitBtn.onclick = submitQuiz;
+        submitBtn.innerText = "시험지 제출";
+    }
+
+    if (highlightId && color) {
+        const targetBtn = document.getElementById(highlightId);
+        if (targetBtn) {
+            targetBtn.style.backgroundColor = color;
+            targetBtn.style.color = "white"; 
+        }
+    }
+    window.scrollTo(0,0);
 }
 
 function resetAllQuiz() {

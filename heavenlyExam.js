@@ -1,16 +1,14 @@
 /**
  * 👑 heavenlyExam.js: 지능형 구절 병합 및 핵심 구문 추출 엔진
- * 업데이트: 괄호(빈칸) 연속 출현 원천 차단 및 정답 여러 개 하나로 묶기(최대 5어절) + 상단 옵션바 연동
+ * 업데이트: common.js와 충돌을 일으키던 showQuarterMenu 중복 함수 완전 삭제
  */
 
 let heavenlyData = null; 
 const heavenlyCache = {};
 
-// 🚨 다시 섞기, 힌트 보기를 위한 현재 시험 데이터 임시 저장소
 let currentQuizChapterData = null;
 let currentFullVerses = [];
 
-// 🚫 빈칸 제외 단어 리스트
 const STOP_WORDS = new Set([
     "또", "및", "곧", "즉", "그러나", "그런데", "그리고", "그러므로", "하지만", "또한", "이에", "이와", "그리하여",
     "이", "그", "저", "것", "바", "수", "안", "위", "아래", "때", "후", "대하여", "위하여", "인하여", "더불어", "함께", 
@@ -19,20 +17,7 @@ const STOP_WORDS = new Set([
     "내가", "나는", "너와", "보니", "보매", "이르리니", "을", "한", "와", "가", "이", "를", "에"
 ]);
 
-function showQuarterMenu(highlightId, color) {
-    if (typeof hideAllSections === 'function') hideAllSections();
-    const quarterMenu = document.getElementById('quarter-menu');
-    if (quarterMenu) quarterMenu.style.display = 'block';
-    if (typeof updateNavUI === 'function') updateNavUI(false);
-    if (highlightId && color) {
-        const targetBtn = document.getElementById(highlightId);
-        if (targetBtn) {
-            targetBtn.style.backgroundColor = color;
-            targetBtn.style.color = "white"; 
-        }
-    }
-    window.scrollTo(0, 0);
-}
+// 🚨 이곳에 있던 중복 함수(showQuarterMenu)를 삭제하여 충돌 100% 차단!
 
 async function loadQuarterData(qName) {
     const loadingEl = document.getElementById('loading');
@@ -83,29 +68,20 @@ function renderChapterList(qName) {
     });
 }
 
-// 🚨 전체 다시 섞기 기능
 function shuffleCurrentQuiz() {
     if(confirm("문제를 전체 다시 섞고 초기화 하시겠습니까?")) {
-        if (typeof toggleIOSSheet === 'function') {
-            const overlay = document.getElementById('ios-sheet-overlay');
-            if(overlay && overlay.classList.contains('active')) toggleIOSSheet();
-        }
+        if (typeof toggleIOSSheet === 'function') toggleIOSSheet();
         if (currentQuizChapterData) startHeavenlyQuiz(currentQuizChapterData); 
     }
 }
 
-/**
- * 📝 지능형 퀴즈 엔진 (빈칸 연속 방지 및 최대 5단어 병합 로직 적용)
- */
 function startHeavenlyQuiz(chapter) {
     if (typeof hideAllSections === 'function') hideAllSections();
     const quizArea = document.getElementById('quiz-area');
     const quizText = document.getElementById('quiz-text');
     
     quizArea.style.display = 'block';
-    // 🚨 퀴즈 화면 진입 시 +버튼 숨김 처리 (true 파라미터 전달)
-    if (typeof updateNavUI === 'function') updateNavUI(false, true); 
-    
+    if (typeof updateNavUI === 'function') updateNavUI(false);
     document.getElementById('quiz-title').innerText = `계시록 제 ${chapter.name}`;
     quizText.innerHTML = "";
     currentAnswers = []; 
@@ -113,12 +89,6 @@ function startHeavenlyQuiz(chapter) {
     currentQuizChapterData = chapter;
     currentFullVerses = [...chapter.verses];
     
-    // 🚨 퀴즈 생성 시 현재 토글 스위치 상태를 모드에 맞게 초기화
-    const rtToggle = document.getElementById('toggle-realtime');
-    const isToggle = document.getElementById('toggle-ignorespace');
-    if (rtToggle && typeof isRealtimeMode !== 'undefined') rtToggle.checked = isRealtimeMode;
-    if (isToggle && typeof isIgnoreSpaceMode !== 'undefined') isToggle.checked = isIgnoreSpaceMode;
-
     const hintContent = document.getElementById('hint-content');
     if(hintContent) {
         hintContent.innerHTML = currentFullVerses.map(v => `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">${v}</div>`).join('');
@@ -165,8 +135,7 @@ function startHeavenlyQuiz(chapter) {
                 if (isBlankCandidate[j]) {
                     let chunk = words[j];
                     let startIdx = j;
-                    // 💡 [핵심] 여러 단어가 정답일 때 하나의 괄호로 합쳐지도록 병합 로직 강화 (최대 5어절)
-                    while (j + 1 < words.length && isBlankCandidate[j + 1] && (j - startIdx) < 5) {
+                    while (j + 1 < words.length && isBlankCandidate[j + 1] && (j - startIdx) < 3) {
                         chunk += " " + words[++j];
                     }
                     chunks.push({ text: chunk, isBlank: true });
@@ -207,7 +176,9 @@ function startHeavenlyQuiz(chapter) {
         const inputs = document.querySelectorAll('.q-inline-input');
         inputs.forEach(input => {
             input.addEventListener('input', function() {
-                if (typeof checkInputRealtime === 'function') checkInputRealtime(this);
+                if (typeof checkInputRealtime === 'function') {
+                    checkInputRealtime(this);
+                }
             });
         });
     }, 100);
